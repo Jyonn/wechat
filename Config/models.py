@@ -59,6 +59,10 @@ class Config(models.Model):
 class ConfigInstance:
     WX_TOKEN = 'wx-Token'
     WX_AES_KEY = 'wx-EncodingAESKey'
+    WX_APP_ID = 'wx-AppID'
+    WX_APP_SECRET = 'wx-AppSecret'
+    WX_ACCESS_TOKEN = 'wx-AccessToken'
+    WX_ACCESS_TOKEN_EXPIRE = 'wx-AccessTokenExpire'
 
 
 CI = ConfigInstance
