@@ -15,6 +15,8 @@ Including another URLconf
 """
 from django.urls import path
 
+from wechat.views import MessageView
+
 urlpatterns = [
     path('message', MessageView.as_view()),
 ]
