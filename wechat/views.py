@@ -22,8 +22,8 @@ class MessageView(View):
     @Analyse.r(q=['signature', 'timestamp', 'nonce', UserP.openid])
     @Auth.wechat
     def post(r):
-        parse_message(r.body)
-        return TextReply(message='留言功能开发中……\n收到您的第%s次留言').render()
+        message = parse_message(r.body)
+        return TextReply(message=message, content='留言功能开发中……\n收到您的第%s次留言').render()
 
 
 class AccessTokenView(View):
