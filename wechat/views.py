@@ -5,27 +5,24 @@ from django.views import View
 from smartify import P
 from wechatpy.utils import check_signature
 
+from Base.auth import Auth
 from Base.common import WX_TOKEN, wechat_client
 from Config.models import Config, CI
 
 
 class MessageView(View):
     @staticmethod
-    @Analyse.r(q=[
-        P('signature').validate(str),
-        P('timestamp').validate(str),
-        P('nonce').validate(str),
-        P('echostr').validate(str)])
+    @Analyse.r(q=['signature', 'timestamp', 'nonce', 'echostr'])
+    @Auth.wechat
     def get(r):
-        try:
-            check_signature(token=WX_TOKEN, **r.d.dict('signature', 'timestamp', 'nonce'))
-            return r.d.echostr
-        except Exception:
-            pass
+        return r.d.echostr
 
     @staticmethod
+    @Analyse.r(q=['signature', 'timestamp', 'nonce', 'openid'])
+    @Auth.wechat
     def post(r):
         print(r.body)
+        return 0
 
 
 class AccessTokenView(View):
@@ -37,3 +34,4 @@ class AccessTokenView(View):
             data = wechat_client.fetch_access_token()
             Config.update_value(CI.WX_ACCESS_TOKEN, data['access_token'])
             Config.update_value(CI.WX_ACCESS_TOKEN_EXPIRE, str(crt_time + data['expires_in']))
+        return 0
