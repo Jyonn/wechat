@@ -23,6 +23,7 @@ class User(models.Model):
     def interact(self):
         self.interaction_times = F('interaction_times') + 1
         self.save()
+        self.refresh_from_db()
 
 
 class UserP:
