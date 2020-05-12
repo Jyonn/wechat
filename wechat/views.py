@@ -19,3 +19,7 @@ class MessageView(View):
             return r.d.echostr
         except Exception:
             pass
+
+    @staticmethod
+    def post(r):
+        print(r.body)

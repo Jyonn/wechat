@@ -4,7 +4,7 @@ from Config.models import Config, CI
 
 
 def data_packer(resp):
-    return resp['body']
+    return resp['body'] or ''
 
 
 NetPacker.set_mode(debug=True)
