@@ -12,7 +12,7 @@ class User(models.Model):
     interaction_times = models.IntegerField(default=1)
 
     @classmethod
-    def create(cls, openid):
+    def get_or_create(cls, openid):
         try:
             user = cls.objects.get(openid=openid)
             user.interact()
@@ -28,4 +28,4 @@ class User(models.Model):
 
 class UserP:
     openid, = User.P('openid')
-    openid.process(User.create).rename('openid', yield_name='user')
+    openid.process(User.get_or_create).rename('openid', yield_name='user')

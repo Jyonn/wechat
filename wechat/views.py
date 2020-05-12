@@ -3,10 +3,11 @@ import datetime
 from SmartDjango import Analyse
 from django.views import View
 from wechatpy import parse_message
+from wechatpy.messages import TextMessage
 from wechatpy.replies import TextReply
 
 from Base.auth import Auth
-from Base.common import WX_TOKEN, wechat_client
+from Base.common import wechat_client
 from Config.models import Config, CI
 from User.models import UserP
 
@@ -24,6 +25,11 @@ class MessageView(View):
     def post(r):
         user = r.d.user
         message = parse_message(r.body)
+        print(message.type)
+        print(message.target)
+        print(message.source)
+        print(message.time)
+        print(TextMessage.content)
         return TextReply(
             message=message,
             content='留言功能开发中……\n收到您的第%s次留言' % user.interaction_times).render()

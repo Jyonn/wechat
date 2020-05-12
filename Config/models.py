@@ -44,7 +44,7 @@ class Config(models.Model):
         except E as e:
             if e.eis(ConfigError.NOT_FOUND):
                 try:
-                    return cls.objects.create(
+                    return cls.objects.get_or_create(
                         key=key,
                         value=value,
                     )
