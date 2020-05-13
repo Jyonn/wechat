@@ -1,6 +1,7 @@
 import json
 
 from SmartDjango import models
+from SmartDjango.classify import Classify
 from django.db.models import F
 
 
@@ -19,10 +20,18 @@ class ServiceData(models.Model):
         default=None,
     )
 
+    parameters = models.TextField(
+        null=True,
+        default=None,
+    )
+
     interact_times = models.IntegerField(default=1)
 
     @classmethod
     def get_or_create(cls, service, user):
+        if not isinstance(service, str):
+            service = service.name
+
         try:
             service_data = cls.objects.get(service=service, user=user)
             service_data.interact()
@@ -39,6 +48,16 @@ class ServiceData(models.Model):
         data = self.data or '{}'
         return json.loads(data)
 
+    def classify(self):
+        return Classify(self.jsonify())
+
     def update(self, data):
         self.data = json.dumps(data, ensure_ascii=False)
+        self.save()
+
+    def fetch_parameters(self):
+        return json.loads(self.parameters or '{}')
+
+    def store_parameters(self, parameters):
+        self.parameters = json.dumps(parameters, ensure_ascii=False)
         self.save()

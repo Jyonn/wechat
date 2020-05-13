@@ -89,18 +89,14 @@ class Parser:
                     key, value = split.split('=', maxsplit=2)
                 else:
                     key, value = split, None
-                combines.append((key, value))
+                combines.append(('--' + key, value))
             elif split.startswith('-'):  # short
                 split = split[1:]
                 if not split:
                     raise ParserError.EMPTY
 
-                key, value = split[0], split[1:]
-                if len(split) == 1:
-                    if index < len(splits) - 1 and not splits[index+1].startswith('-'):
-                        key, value = split, splits[index+1]
-                        index += 1
-                combines.append((key, value))
+                key, value = split[0], split[1:] or None
+                combines.append(('-' + key, value))
             else:
                 combines.append(split)
 
@@ -127,3 +123,9 @@ class Parser:
                 kwargs[combine[0]] = combine[1]
             else:
                 args.append(combine)
+
+        return args, kwargs
+
+
+if __name__ == '__main__':
+    print(Parser.parse('ls -l -m lang/modal --inside --parent=x shall'))

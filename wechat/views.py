@@ -1,6 +1,6 @@
 import datetime
 
-from SmartDjango import Analyse
+from SmartDjango import Analyse, E
 from django.views import View
 from wechatpy import parse_message
 from wechatpy.messages import TextMessage
@@ -8,8 +8,9 @@ from wechatpy.replies import TextReply
 
 from Base.auth import Auth
 from Base.common import wechat_client
+from Base.message_handler import MessageHandler
 from Config.models import Config, CI
-from User.models import UserP
+from User.models import UserP, User
 
 
 class MessageView(View):
@@ -25,14 +26,26 @@ class MessageView(View):
     def post(r):
         user = r.d.user
         message = parse_message(r.body)
-        print(message.type)
-        print(message.target)
-        print(message.source)
-        print(message.time)
-        print(TextMessage.content)
+
+        if message.type == 'text':
+            try:
+                content = MessageHandler(user, message.content).message
+            except E as e:
+                content = e.message
+        else:
+            content = '暂不支持回复非文字消息'
+
         return TextReply(
             message=message,
-            content='留言功能开发中……\n收到您的第%s次留言' % user.interaction_times).render()
+            content=content).render()
+
+
+class TestView(View):
+    @staticmethod
+    @Analyse.r(b=['command'])
+    def post(r):
+        user = User.objects.get(pk=1)
+        return MessageHandler(user, r.d.command).message
 
 
 class AccessTokenView(View):

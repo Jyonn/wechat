@@ -5,6 +5,8 @@ from Config.models import Config, CI
 
 
 def data_packer(resp):
+    # if resp['code']:
+    #     return resp['msg']
     return resp['body'] or ''
 
 

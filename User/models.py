@@ -11,6 +11,8 @@ class User(models.Model):
 
     interaction_times = models.IntegerField(default=1)
 
+    inside_service = models.CharField(max_length=10, null=True, default=None)
+
     @classmethod
     def get_or_create(cls, openid):
         try:
@@ -24,6 +26,10 @@ class User(models.Model):
         self.interaction_times = F('interaction_times') + 1
         self.save()
         self.refresh_from_db()
+
+    def inside(self, service):
+        self.inside_service = service
+        self.save()
 
 
 class UserP:

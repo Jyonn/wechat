@@ -1,5 +1,6 @@
 from Base.service import Service
 from Base.tools import Tools
+from Service.models import ServiceData
 
 
 @Service.register
@@ -9,8 +10,8 @@ class FlowerFontService(Service):
     long_desc = ''
 
     @classmethod
-    def run(cls, sentence, *args, **kwargs):
-        resp = Tools.get(Tools.FlowerFont)
+    def run(cls, directory: 'Service', storage: ServiceData, parameters: dict, *args):
+        resp = Tools.get(Tools.FlowerFont, {"sentence": args[0] if args else ''})
         messages = []
         if not resp['supported']:
             messages.append('暂无完全支持的花字体')
