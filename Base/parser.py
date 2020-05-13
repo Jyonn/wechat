@@ -81,8 +81,11 @@ class Parser:
         index = 0
         while index < len(splits):
             split = splits[index]  # type: str
-            if split.startswith('--'):  # long
-                split = split[2:]
+            if split.startswith('--') or split.startswith('—'):  # long
+                if split.startswith('--'):
+                    split = split[2:]
+                else:
+                    split = split[1:]
                 if not split:
                     raise ParserError.EMPTY
                 if '=' in split:
