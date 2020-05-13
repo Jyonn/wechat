@@ -10,6 +10,7 @@ class ToolsError:
 
 class Tools:
     FlowerFont = '/language/unicode-font'
+    Pinyin = '/language/character-to-pinyin'
 
     @classmethod
     def get(cls, url, data=None):

@@ -4,7 +4,7 @@ from SmartDjango import E
 
 from Base.parser import Parser
 from Base.service import ServiceDepot, Service
-from Base.services.root import LanguageService
+from Base.services.root import LanguageService, BaseService
 from Service.models import ServiceData
 from User.models import User
 
@@ -23,7 +23,7 @@ class RootService(Service):
     as_dir = True
 
 
-RootService.contains(LanguageService)
+RootService.contains(LanguageService, BaseService)
 
 
 class MessageHandler:
@@ -32,6 +32,11 @@ class MessageHandler:
         data = ServiceData.get_or_create('cd', user).classify()
         service = ServiceDepot.get(data.service or 'root')
         return service
+
+    @classmethod
+    def is_cmd_hide(cls, user: User):
+        data = ServiceData.get_or_create('cmd', user).classify()
+        return data.hide
 
     def __init__(self, user: User, command: Optional[str]):
         # command = message.content  # type: # Optional[str]
@@ -63,9 +68,13 @@ class MessageHandler:
         if '--inside' in kwargs:
             user.inside(service.name)
 
+        directory = self.get_directory(user)  # type: Service
+        console_line = directory.get_console_line() + service.name + '\n'
         if '--quit' in kwargs:
             user.inside(None)
-            self.message = '已退出%s' % service.name
+            self.message = ''
         else:
-            directory = self.get_directory(user)
-            self.message = service.work(directory, storage, parameters, *args)
+            self.message = service.work(directory, storage, parameters, *args) or ''
+
+        if not self.is_cmd_hide(user):
+            self.message = console_line + self.message

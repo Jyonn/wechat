@@ -7,7 +7,6 @@ from Service.models import ServiceData
 class FlowerFontService(Service):
     name = 'font'
     desc = '花体英文数字转换'
-    long_desc = ''
 
     @classmethod
     def run(cls, directory: 'Service', storage: ServiceData, parameters: dict, *args):
@@ -25,3 +24,17 @@ class FlowerFontService(Service):
             for font in resp['unsupported']:
                 messages.append(font['sentence'])
         return '\n'.join(messages)
+
+
+@Service.register
+class PinyinService(Service):
+    name = 'pinyin'
+    desc = '汉字转拼音'
+
+    @classmethod
+    def run(cls, directory: 'Service', storage: ServiceData, parameters: dict, *args):
+        text = args[0] if args else ''
+        resp = Tools.get(Tools.Pinyin, {"text": text})
+        resp = list(filter(lambda x: x, resp))
+
+        return ' /'[len(text) == 1].join(resp)

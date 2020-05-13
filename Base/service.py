@@ -10,6 +10,7 @@ from Service.models import ServiceData
 class ServiceError:
     PARAM_NO_VALUE = E("命令需要{0}参数")
     PARAM_NAME = E("参数命名错误")
+    DIR_NOT_CALLABLE = E("目录无法运行")
 
 
 class Parameter:
@@ -63,25 +64,29 @@ class Parameter:
 class Service:
     name = 'NAME'
     desc = 'DESCRIPTION'
-    long_desc = 'LONG DESCRIPTION'
+    long_desc = """暂无详细说明"""
 
     as_dir = False
     parent = None
 
     PHelper = Parameter(P(read_name='获取帮助').default(), long='help', short='h')
+    PInline = Parameter(P(read_name='批处理模式').default(), long='inline')
 
-    __parameters = [PHelper]  # type: List[Parameter]
+    __parameters = [PHelper, PInline]  # type: List[Parameter]
     __services = []  # type: List['Service']
 
     @classmethod
     def helper(cls):
-        messages = ['%s功能参数说明：' % cls.name]
+        messages = ['%s: %s' % (cls.name, cls.desc), cls.long_desc, '', '功能参数说明：']
         for parameter in cls.__parameters:
             messages.append('%s: %s' % (str(parameter), parameter.p.read_name))
         return '\n'.join(messages)
 
     @classmethod
     def work(cls, directory: 'Service', storage: ServiceData, parameters: dict, *args):
+        if cls.as_dir:
+            raise ServiceError.DIR_NOT_CALLABLE
+
         if parameters[cls.PHelper] == Parameter.NotSet:
             return cls.run(directory, storage, parameters, *args)
         return cls.helper()
@@ -132,6 +137,15 @@ class Service:
     @classmethod
     def get_services(cls):
         return cls.__services
+
+    @classmethod
+    def get_console_line(cls):
+        paths = ''
+        service = cls
+        while service.name != 'root':
+            paths = '/' + service.name + paths
+            service = service.parent
+        return '$ %s > ' % (paths or '/')
 
 
 class ServiceDepot:
