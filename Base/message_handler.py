@@ -5,6 +5,7 @@ from SmartDjango import E
 from Base.parser import Parser
 from Base.service import ServiceDepot, Service
 from Base.services.root import LanguageService, BaseService
+from Base.UnicodeFont.unicode_font import LNormalBoldItalic
 from Service.models import ServiceData
 from User.models import User
 
@@ -70,6 +71,7 @@ class MessageHandler:
 
         directory = self.get_directory(user)  # type: Service
         console_line = directory.get_console_line() + service.name + '\n'
+        console_line = LNormalBoldItalic.translate(console_line)
         if '--quit' in kwargs:
             user.inside(None)
             self.message = ''

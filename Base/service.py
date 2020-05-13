@@ -3,6 +3,7 @@ from typing import List, Union
 from SmartDjango import E
 from smartify import P
 
+from Base.UnicodeFont.unicode_font import LNormalItalic, LTiny
 from Service.models import ServiceData
 
 
@@ -79,7 +80,7 @@ class Service:
     def helper(cls):
         messages = ['%s: %s' % (cls.name, cls.desc), cls.long_desc, '', '功能参数说明：']
         for parameter in cls.__parameters:
-            messages.append('%s: %s' % (str(parameter), parameter.p.read_name))
+            messages.append('%s: %s' % (LTiny.translate(str(parameter)), parameter.p.read_name))
         return '\n'.join(messages)
 
     @classmethod
