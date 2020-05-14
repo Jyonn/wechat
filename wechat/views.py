@@ -36,7 +36,7 @@ class MessageView(View):
                     title='极客 # 如何上手MasterWhole',
                     description='我不是订阅号，我是工具箱。',
                     image='https://res.6-79.cn/disk/cover/WSp5/1574054229.979414/FullSizeRender.jpg?e=1589448273&token=oX6jJmjudP-3BXHJ3A8lYjEQRlQHBc70734ZyTR4:1kQHVWcGdJ82DAwhB3LSqB3uzDQ=',
-                    url='https://d.6-79.cn/res/SgARFB',
+                    url='https://mp.weixin.qq.com/s/Md6iCGh3OgIr5l2dOMeunw',
                 ))
                 return reply
             else:
