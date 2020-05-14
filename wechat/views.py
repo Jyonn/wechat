@@ -25,6 +25,7 @@ class MessageView(View):
     @Auth.wechat
     def post(r):
         user = r.d.user
+        print(r.body)
         message = parse_message(r.body)
 
         if message.type == 'text':
