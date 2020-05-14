@@ -31,14 +31,7 @@ class MessageView(View):
 
         if message.type == 'event':
             if message.event.startswith('subscribe'):
-                reply = ArticlesReply()
-                reply.add_article(dict(
-                    title='极客 # 如何上手MasterWhole',
-                    description='我不是订阅号，我是工具箱。',
-                    image='https://wx.qlogo.cn/mmhead/CttmTaYSYkR707iczWkLNXRC0E6yEw7Aich5YEVKaeFeryic14LwkYvlQ/0',
-                    url='https://mp.weixin.qq.com/s/Md6iCGh3OgIr5l2dOMeunw',
-                ))
-                return reply
+                content = '欢迎关注，<a href="https://mp.weixin.qq.com/s/Md6iCGh3OgIr5l2dOMeunw">立即体验MasterWhole</a>！'
             else:
                 content = '暂不支持回复非文字消息'
         elif message.type == 'text':
