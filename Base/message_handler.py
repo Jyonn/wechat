@@ -2,6 +2,7 @@ from typing import Optional
 
 from SmartDjango import E
 
+from Base.common import ROOT_NAME
 from Base.parser import Parser
 from Base.service import ServiceDepot, Service
 from Base.services.root import LanguageService, BaseService
@@ -12,14 +13,14 @@ from User.models import User
 
 @E.register(id_processor=E.idp_cls_prefix())
 class HandlerError:
-    NOT_FOUND = E("找不到{0}命令")
+    NOT_FOUND = E("找不到名为{0}的杰作")
 
 
 @Service.register
 class RootService(Service):
-    name = 'root'
-    desc = '根目录'
-    long_desc = '暂无介绍'
+    name = ROOT_NAME
+    desc = '杰作箱'
+    long_desc = '按树状结构呈现，可使用ls/cd等杰作获取内部信息'
 
     as_dir = True
 
@@ -31,13 +32,13 @@ class MessageHandler:
     @classmethod
     def get_directory(cls, user: User):
         data = ServiceData.get_or_create('cd', user).classify()
-        service = ServiceDepot.get(data.service or 'root')
+        service = ServiceDepot.get(data.service or ROOT_NAME)
         return service
 
-    @classmethod
-    def is_cmd_hide(cls, user: User):
-        data = ServiceData.get_or_create('cmd', user).classify()
-        return data.hide
+    # @classmethod
+    # def is_cmd_hide(cls, user: User):
+    #     data = ServiceData.get_or_create('cmd', user).classify()
+    #     return data.hide
 
     def __init__(self, user: User, command: Optional[str]):
         # command = message.content  # type: # Optional[str]
@@ -70,13 +71,13 @@ class MessageHandler:
             user.inside(service.name)
 
         directory = self.get_directory(user)  # type: Service
-        console_line = directory.get_console_line() + service.name + '\n'
-        console_line = LNormalBoldItalic.translate(console_line)
+        # console_line = directory.get_console_line() + service.name + '\n'
+        # console_line = LNormalBoldItalic.translate(console_line)
         if '--quit' in kwargs:
             user.inside(None)
             self.message = ''
         else:
             self.message = service.work(directory, storage, parameters, *args) or ''
 
-        if not self.is_cmd_hide(user):
-            self.message = console_line + self.message
+        # if not self.is_cmd_hide(user):
+        #     self.message = console_line + self.message

@@ -3,6 +3,7 @@ from typing import List, Union
 from SmartDjango import E
 from smartify import P
 
+from Base.common import ROOT_NAME
 from Service.models import ServiceData
 
 
@@ -142,7 +143,7 @@ class Service:
     def get_console_line(cls):
         paths = ''
         service = cls
-        while service.name != 'root':
+        while service.name != ROOT_NAME:
             paths = '/' + service.name + paths
             service = service.parent
         return '$ %s > ' % (paths or '/')

@@ -1,15 +1,16 @@
 from SmartDjango import E
 from smartify import P
 
-from Base.service import Service, Parameter
+from Base.common import ROOT_NAME
+from Base.service import Service, Parameter, ServiceDepot
 from Service.models import ServiceData
 
 
 @E.register(id_processor=E.idp_cls_prefix())
 class BaseServiceError:
-    CD_DIR = E("{0}不是目录，无法进入")
-    NOT_FOUND = E("没有名为{0}的目录")
-    PARENT = E("无法回到上级目录")
+    CD_DIR = E("{0}不是工具箱，无法进入")
+    NOT_FOUND = E("没有名为{0}的工具箱")
+    PARENT = E("没有更大的工具箱啦")
 
 
 @Service.register
@@ -34,24 +35,27 @@ CommandLineService.validate(CommandLineService.PShow, CommandLineService.PHide)
 @Service.register
 class CDService(Service):
     name = 'cd'
-    desc = '切换目录'
+    desc = '切换工具箱'
 
     @classmethod
     def run(cls, directory: Service, storage: ServiceData, parameters: dict, *args):
         paths = args[0] if args else ''
         terminal = LSService.find_path(directory, paths)
         storage.update(dict(service=terminal.name))
+        return '已进入%s工具箱' % terminal.name
 
 
 @Service.register
 class LSService(Service):
     name = 'ls'
-    desc = '查看当前目录'
+    desc = '查看工具箱'
 
     PLong = Parameter(P(read_name='是否显示完整信息').default(), short='l')
 
     @staticmethod
     def find_path(current: Service, paths: str):
+        if paths and paths[0] == '/':
+            current = ServiceDepot.get(ROOT_NAME)
         paths = paths.split('/')
         for path in paths:
             if path == '..':
@@ -72,9 +76,9 @@ class LSService(Service):
         terminal = cls.find_path(directory, paths)
 
         long = cls.PLong.set(parameters)
-        messages = []
+        messages = ['%s中拥有以下工具：' % terminal.name]
         for child in terminal.get_services():
-            name = child.name + ['', '（目录）'][child.as_dir]
+            name = child.name + ['（工具）', '（工具箱）'][child.as_dir]
             if long:
                 messages.append('%s\t%s' % (name, child.desc))
             else:

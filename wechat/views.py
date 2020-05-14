@@ -45,7 +45,10 @@ class TestView(View):
     @Analyse.r(b=['command'])
     def post(r):
         user = User.objects.get(pk=1)
-        return MessageHandler(user, r.d.command).message
+        try:
+            return MessageHandler(user, r.d.command).message
+        except E as e:
+            return e.message
 
 
 class AccessTokenView(View):

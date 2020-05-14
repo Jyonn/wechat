@@ -19,3 +19,5 @@ WX_APP_ID = Config.get_value_by_key(CI.WX_APP_ID)
 WX_APP_SECRET = Config.get_value_by_key(CI.WX_APP_SECRET)
 
 wechat_client = WeChatClient(appid=WX_APP_ID, secret=WX_APP_SECRET)
+
+ROOT_NAME = 'MasterWhole'
