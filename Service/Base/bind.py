@@ -73,6 +73,7 @@ class BindPhoneService(Service):
 
             Phone.validate(phone, captcha)
             storage.update(dict(
+                phone=phone,
                 captcha=captcha,
                 last_time=crt_time,
                 attempt=3,
