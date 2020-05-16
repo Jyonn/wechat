@@ -16,6 +16,8 @@ class LSError:
 class LSService(Service):
     name = 'ls'
     desc = '查看工具箱'
+    long_desc = '👉ls lang\n' \
+                '👉ls ../web'
 
     PLong = Parameter(P(read_name='是否显示完整信息').default(), short='l')
 

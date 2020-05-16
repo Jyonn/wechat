@@ -8,15 +8,14 @@ from Service.models import ServiceData, Service, Parameter
 class PinyinService(Service):
     name = 'pinyin'
     desc = '汉字转拼音'
-    long_desc = "如获得林俊杰的拼音\n" \
-                "pinyin 林俊杰\n" \
-                "> lín jùn jié\n" \
+    long_desc = "👉pinyin 林俊杰\n" \
+                "✅lín jùn jié\n" \
                 "当输入单个汉字且是多音字时，默认返回该字的所有拼音\n" \
-                "pinyin 给\n" \
-                "> gěi/jǐ\n" \
+                "👉pinyin 给\n" \
+                "✅gěi/jǐ\n" \
                 "可以使用-s或--single来获得单个拼音\n" \
-                "pinyin -s 给\n" \
-                "> gěi"
+                "👉pinyin -s 给\n" \
+                "✅gěi"
 
     PSingle = Parameter(P(read_name='多音字返回一个拼音').default(), long='single', short='s')
 

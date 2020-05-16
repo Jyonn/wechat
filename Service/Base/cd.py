@@ -13,6 +13,8 @@ class CDError:
 class CDService(Service):
     name = 'cd'
     desc = '切换工具箱'
+    long_desc = '👉cd lang\n' \
+                '👉cd ../web'
 
     @classmethod
     def run(cls, directory: Service, storage: ServiceData, parameters: dict, *args):
