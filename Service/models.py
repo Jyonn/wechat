@@ -121,7 +121,7 @@ class ServiceData(models.Model):
 
     def update(self, data):
         if isinstance(data, Classify):
-            data = data._dict
+            data = data.dict()
         self.data = json.dumps(data, ensure_ascii=False)
         self.save()
 
