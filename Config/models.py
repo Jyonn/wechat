@@ -61,9 +61,13 @@ class ConfigInstance:
     WX_AES_KEY = 'wx-EncodingAESKey'
     WX_APP_ID = 'wx-AppID'
     WX_APP_SECRET = 'wx-AppSecret'
+
     WX_ACCESS_TOKEN = 'wx-AccessToken'
     WX_ACCESS_TOKEN_EXPIRE = 'wx-AccessTokenExpire'
+
     YP_KEY = 'yp-Key'
+
+    SECRET_KEY = 'secret_key'
 
 
 CI = ConfigInstance

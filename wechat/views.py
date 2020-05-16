@@ -9,9 +9,10 @@ from wechatpy.messages import TextMessage, BaseMessage
 from wechatpy.replies import TextReply, ArticlesReply
 
 from Base.auth import Auth
-from Base.common import wechat_client
-from Base.message_handler import MessageHandler
+from Base.common import wechat_client, SECRET_KEY
+from Base.handler import MessageHandler
 from Config.models import Config, CI
+from Service.models import ServiceDepot, ServiceData
 from User.models import UserP, User
 
 
@@ -68,3 +69,19 @@ class AccessTokenView(View):
             Config.update_value(CI.WX_ACCESS_TOKEN, data['access_token'])
             Config.update_value(CI.WX_ACCESS_TOKEN_EXPIRE, str(crt_time + data['expires_in']))
         return 0
+
+
+class ServiceView(View):
+    @staticmethod
+    @Analyse.r(q=['secret_key'])
+    def get(r):
+        if SECRET_KEY != r.d.secret_key:
+            return 0
+
+        for name in ServiceDepot.services:
+            service = ServiceDepot.services[name]
+            if service.async_task:
+                service_data_list = ServiceData.objects.filter(service=name)
+                service.async_work_handler(service_data_list)
+
+        return '异步任务完成'

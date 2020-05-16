@@ -1,3 +1,5 @@
+import hashlib
+
 from SmartDjango import NetPacker
 from wechatpy import WeChatClient
 
@@ -15,8 +17,15 @@ WX_TOKEN = Config.get_value_by_key(CI.WX_TOKEN)
 WX_AES_KEY = Config.get_value_by_key(CI.WX_AES_KEY)
 WX_APP_ID = Config.get_value_by_key(CI.WX_APP_ID)
 WX_APP_SECRET = Config.get_value_by_key(CI.WX_APP_SECRET)
+
 YP_KEY = Config.get_value_by_key(CI.YP_KEY)
+
+SECRET_KEY = Config.get_value_by_key(CI.SECRET_KEY)
 
 wechat_client = WeChatClient(appid=WX_APP_ID, secret=WX_APP_SECRET)
 
-ROOT_NAME = 'MasterWhole'
+
+def md5(b):
+    m = hashlib.md5()
+    m.update(b)
+    return m.hexdigest()

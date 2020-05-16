@@ -1,9 +1,10 @@
 from django.urls import path
 
-from wechat.views import MessageView, AccessTokenView, TestView
+from wechat.views import MessageView, AccessTokenView, TestView, ServiceView
 
 urlpatterns = [
     path('message', MessageView.as_view()),
     path('access-token', AccessTokenView.as_view()),
     path('test', TestView.as_view()),
+    path('service', ServiceView.as_view()),
 ]

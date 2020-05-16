@@ -2,13 +2,14 @@ from typing import Optional
 
 from SmartDjango import E
 
-from Base.common import ROOT_NAME
 from Base.parser import Parser
-from Base.service import ServiceDepot, Service
-from Base.services.root import LanguageService, BaseService
-from Base.UnicodeFont.unicode_font import LNormalBoldItalic
-from Service.models import ServiceData
+from Base.root import ROOT_NAME
+from Service.Web import WebService
+from Service.models import ServiceData, ServiceDepot
 from User.models import User
+from Service.Base import BaseService
+from Service.Lang import LanguageService
+from Service.models import Service
 
 
 @E.register(id_processor=E.idp_cls_prefix())
@@ -24,8 +25,9 @@ class RootService(Service):
 
     as_dir = True
 
-
-RootService.contains(LanguageService, BaseService)
+    @classmethod
+    def init(cls):
+        cls.contains(LanguageService, BaseService, WebService)
 
 
 class MessageHandler:

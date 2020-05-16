@@ -1,7 +1,12 @@
 from datetime import datetime
 
-from SmartDjango import models
+from SmartDjango import models, E
 from django.db.models import F
+
+
+@E.register(id_processor=E.idp_cls_prefix())
+class UserError:
+    REQUIRE_PHONE = E("该工具需要绑定手机，详见bind命令")
 
 
 class User(models.Model):
@@ -40,6 +45,10 @@ class User(models.Model):
     @property
     def phone_bind(self):
         return self.phone is not None
+
+    def require_phone(self):
+        if not self.phone:
+            raise UserError.REQUIRE_PHONE
 
 
 class UserP:
