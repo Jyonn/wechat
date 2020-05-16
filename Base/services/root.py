@@ -1,5 +1,5 @@
 from Base.service import Service
-from Base.services.base import LSService, CDService
+from Base.services.base import LSService, CDService, BindPhoneService
 from Base.services.language import FlowerFontService, PinyinService
 
 
@@ -26,4 +26,4 @@ class BaseService(Service):
 
     @classmethod
     def init(cls):
-        cls.contains(LSService, CDService)
+        cls.contains(LSService, CDService, BindPhoneService)
