@@ -39,7 +39,7 @@ class WatchService(Service):
                 '⚠️监控时间间隔为5分钟\n' \
                 '⚠️暂不支持中文域名网址监控\n' \
                 '⚠️网页格式规范，应以http/https开头\n' \
-                'watch --name=百度 https://www.baidu.com'
+                'watch -n百度 https://abc.com'
 
     async_task = True
 
