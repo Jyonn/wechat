@@ -140,7 +140,7 @@ class WatchService(Service):
             return
 
         if data.key != key:
-            Phone.announce(service_data.user, cls, '监控任务%s的网页发生变化')
+            Phone.announce(service_data.user, cls, '监控任务%s的网页发生变化' % data.name)
             service_data.update(dict(work=False))
             return
 
