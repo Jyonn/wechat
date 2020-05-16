@@ -61,6 +61,9 @@ class Parameter:
             return parameters[self] != self.NotSet
         return False
 
+    def get(self, parameters: dict):
+        return parameters[self]
+
 
 class Service:
     name = 'NAME'
@@ -75,6 +78,10 @@ class Service:
 
     __parameters = [PHelper, PInline]  # type: List[Parameter]
     __services = []  # type: List['Service']
+
+    @classmethod
+    def init(cls):
+        pass
 
     @classmethod
     def helper(cls):
@@ -120,6 +127,7 @@ class Service:
     @classmethod
     def register(cls, service: 'Service'):
         ServiceDepot.register(service)
+        service.init()
         return service
 
     @classmethod

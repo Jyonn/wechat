@@ -52,6 +52,8 @@ class ServiceData(models.Model):
         return Classify(self.jsonify())
 
     def update(self, data):
+        if isinstance(data, Classify):
+            data = data._dict
         self.data = json.dumps(data, ensure_ascii=False)
         self.save()
 

@@ -63,6 +63,7 @@ class ConfigInstance:
     WX_APP_SECRET = 'wx-AppSecret'
     WX_ACCESS_TOKEN = 'wx-AccessToken'
     WX_ACCESS_TOKEN_EXPIRE = 'wx-AccessTokenExpire'
+    YP_KEY = 'yp-Key'
 
 
 CI = ConfigInstance

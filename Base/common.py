@@ -5,8 +5,6 @@ from Config.models import Config, CI
 
 
 def data_packer(resp):
-    # if resp['code']:
-    #     return resp['msg']
     return resp['body'] or ''
 
 
@@ -17,6 +15,7 @@ WX_TOKEN = Config.get_value_by_key(CI.WX_TOKEN)
 WX_AES_KEY = Config.get_value_by_key(CI.WX_AES_KEY)
 WX_APP_ID = Config.get_value_by_key(CI.WX_APP_ID)
 WX_APP_SECRET = Config.get_value_by_key(CI.WX_APP_SECRET)
+YP_KEY = Config.get_value_by_key(CI.YP_KEY)
 
 wechat_client = WeChatClient(appid=WX_APP_ID, secret=WX_APP_SECRET)
 

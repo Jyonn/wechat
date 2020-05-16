@@ -1,5 +1,5 @@
 from Base.service import Service
-from Base.services.base import LSService, CDService, CommandLineService
+from Base.services.base import LSService, CDService
 from Base.services.language import FlowerFontService, PinyinService
 
 
@@ -11,8 +11,9 @@ class LanguageService(Service):
 
     as_dir = True
 
-
-LanguageService.contains(FlowerFontService, PinyinService)
+    @classmethod
+    def init(cls):
+        cls.contains(FlowerFontService, PinyinService)
 
 
 @Service.register
@@ -23,5 +24,6 @@ class BaseService(Service):
 
     as_dir = True
 
-
-BaseService.contains(LSService, CDService)
+    @classmethod
+    def init(cls):
+        cls.contains(LSService, CDService)

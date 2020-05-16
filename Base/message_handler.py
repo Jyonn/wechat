@@ -35,11 +35,6 @@ class MessageHandler:
         service = ServiceDepot.get(data.service or ROOT_NAME)
         return service
 
-    # @classmethod
-    # def is_cmd_hide(cls, user: User):
-    #     data = ServiceData.get_or_create('cmd', user).classify()
-    #     return data.hide
-
     def __init__(self, user: User, command: Optional[str]):
         # command = message.content  # type: # Optional[str]
         service = None  # type: Optional[Service]

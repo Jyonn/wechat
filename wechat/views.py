@@ -27,7 +27,7 @@ class MessageView(View):
     @Auth.wechat
     def post(r):
         user = r.d.user
-        message = parse_message(r.body)  # type: Union[BaseMessage, BaseEvent]
+        message = parse_message(r.body)  # type: Union[TextMessage, BaseEvent]
 
         if message.type == 'event':
             if message.event.startswith('subscribe'):

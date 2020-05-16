@@ -58,5 +58,6 @@ class PinyinService(Service):
 
         return ' /'[len(text) == 1].join(resp)
 
-
-PinyinService.validate(PinyinService.PSingle)
+    @classmethod
+    def init(cls):
+        cls.validate(cls.PSingle)

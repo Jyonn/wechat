@@ -13,6 +13,8 @@ class User(models.Model):
 
     inside_service = models.CharField(max_length=10, null=True, default=None)
 
+    phone = models.CharField(max_length=11, null=True, default=None)
+
     @classmethod
     def get_or_create(cls, openid):
         try:
@@ -31,7 +33,15 @@ class User(models.Model):
         self.inside_service = service
         self.save()
 
+    def set_phone(self, phone):
+        self.phone = phone
+        self.save()
+
+    @property
+    def phone_bind(self):
+        return self.phone is not None
+
 
 class UserP:
-    openid, = User.P('openid')
+    openid, phone = User.P('openid', 'phone')
     openid.process(User.get_or_create).rename('openid', yield_name='user')
