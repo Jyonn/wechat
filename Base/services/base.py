@@ -82,7 +82,7 @@ class BindPhoneService(Service):
                 last_time=crt_time,
                 attempt=3,
             ))
-            return '验证码已发送，五分钟内有效'
+            return '验证码已发送，五分钟内有效，请使用bind -c命令验证'
         elif cls.PCaptcha.set(parameters):
             if not data.attempt:
                 return '请重新发送验证码'
