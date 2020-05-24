@@ -1,3 +1,4 @@
+from Base.para import Para
 from Base.tools import Tools
 from Service.models import ServiceData, Service
 
@@ -6,9 +7,10 @@ from Service.models import ServiceData, Service
 class FontService(Service):
     name = 'font'
     desc = '英文数字转花体字'
-    long_desc = '若句子中存在空格，需加引号\n' \
-                '👉font "this is a sentence with space"\n' \
-                '👉font TheSentenceWithoutSpace\n'
+    long_desc = Para(
+        '若句子中存在空格，需加引号',
+        '👉font "this is a sentence with space"',
+        '👉font TheSentenceWithoutSpace')
 
     @classmethod
     def run(cls, directory: 'Service', storage: ServiceData, parameters: dict, *args):

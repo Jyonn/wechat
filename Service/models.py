@@ -10,8 +10,6 @@ from typing import List, Union, Dict
 from SmartDjango import E
 from smartify import P
 
-from Base.root import ROOT_NAME
-
 
 @E.register()
 class ServiceError:
@@ -63,12 +61,12 @@ class Parameter:
                 return '-%s' % self.short
         return '--%s' % self.long
 
-    def set(self, parameters: dict):
+    def is_set_in(self, parameters: dict):
         if self in parameters:
             return parameters[self] != self.NotSet
         return False
 
-    def get(self, parameters: dict):
+    def get_in(self, parameters: dict):
         return parameters[self]
 
 
@@ -81,6 +79,7 @@ class ServiceData(models.Model):
     user = models.ForeignKey(
         'User.User',
         on_delete=models.CASCADE,
+        null=True,
     )
 
     data = models.TextField(
@@ -141,7 +140,8 @@ class Service:
 
     as_dir = False
     parent = None
-    async_task = False
+    async_user_task = False
+    async_service_task = False
 
     PHelper = Parameter(P(read_name='获取帮助').default(), long='help', short='h')
     PInline = Parameter(P(read_name='批处理模式').default(), long='inline')
@@ -154,12 +154,16 @@ class Service:
         pass
 
     @classmethod
+    def get_global_storage(cls):
+        return ServiceData.get_or_create(cls.name, None)
+
+    @classmethod
     def need_help(cls):
         return '请使用%s -h查看本工具的使用方法' % cls.name
 
     @classmethod
     def helper(cls):
-        messages = ['%s: %s' % (cls.name, cls.desc), cls.long_desc, '', '功能参数说明：']
+        messages = ['%s: %s' % (cls.name, cls.desc), str(cls.long_desc), '', '功能参数说明：']
         for parameter in cls.__parameters:
             messages.append('%s: %s' % (str(parameter), parameter.p.read_name))
         return '\n'.join(messages)
@@ -170,7 +174,7 @@ class Service:
             raise ServiceError.DIR_NOT_CALLABLE
 
         if parameters[cls.PHelper] == Parameter.NotSet:
-            return cls.run(directory, storage, parameters, *args)
+            return str(cls.run(directory, storage, parameters, *args))
         return cls.helper()
 
     @classmethod
@@ -222,20 +226,15 @@ class Service:
         return cls.__services
 
     @classmethod
-    def get_console_line(cls):
-        paths = ''
-        service = cls
-        while service.name != ROOT_NAME:
-            paths = '/' + service.name + paths
-            service = service.parent
-        return '$ %s > ' % (paths or '/')
-
-    @classmethod
-    def async_work_handler(cls, service_data_list: List[ServiceData]):
+    def async_user_handler(cls, storage_list: List[ServiceData]):
         pass
 
     @classmethod
-    def async_work(cls, service_data: ServiceData):
+    def async_user(cls, storage: ServiceData):
+        pass
+
+    @classmethod
+    def async_service(cls, storage: ServiceData):
         pass
 
 

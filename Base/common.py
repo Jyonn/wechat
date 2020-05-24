@@ -13,6 +13,8 @@ def data_packer(resp):
 NetPacker.set_mode(debug=True)
 NetPacker.customize_data_packer(data_packer)
 
+ADMIN_PHONE = Config.get_value_by_key(CI.ADMIN_PHONE)
+
 WX_TOKEN = Config.get_value_by_key(CI.WX_TOKEN)
 WX_AES_KEY = Config.get_value_by_key(CI.WX_AES_KEY)
 WX_APP_ID = Config.get_value_by_key(CI.WX_APP_ID)

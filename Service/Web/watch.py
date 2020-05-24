@@ -8,6 +8,7 @@ from SmartDjango import E
 from smartify import P
 
 from Base.common import md5
+from Base.para import Para
 from Base.phone import Phone
 from Service.models import ServiceData, Parameter, Service
 
@@ -20,7 +21,7 @@ class WatchError:
 
 regex = re.compile(
         r'^(?:http|ftp)s?://'  # http:// or https://
-        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'
         r'localhost|'  # localhost...
         r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
         r'(?::\d+)?'  # optional port
@@ -35,13 +36,14 @@ def url_validate(url):
 class WatchService(Service):
     name = 'watch'
     desc = '网页变化监控'
-    long_desc = '当网页发送变化时，将会发送短信提醒，且任务自动结束\n' \
-                '⚠️监控时间间隔为5分钟\n' \
-                '⚠️暂不支持中文域名网址监控\n' \
-                '⚠️网页格式规范，应以http/https开头\n' \
-                '👉watch -n百度 https://abc.com'
+    long_desc = Para(
+        '当网页发送变化时，将会发送短信提醒，且任务自动结束',
+        '⚠️监控时间间隔为5分钟',
+        '⚠️暂不支持中文域名网址监控',
+        '⚠️网页格式规范，应以http/https开头',
+        '👉watch -n百度 https://abc.com')
 
-    async_task = True
+    async_user_task = True
 
     PName = Parameter(P(read_name='监控名').default(), long='name', short='n')
     PCancel = Parameter(P(read_name='取消当前任务').default(), long='cancel')
@@ -60,21 +62,21 @@ class WatchService(Service):
         storage.user.require_phone()
 
         data = storage.classify()
-        if cls.PCancel.set(parameters):
-            storage.update(dict(
-                work=False,
-            ))
-            return '任务已清空'
+        if cls.PCancel.is_set_in(parameters):
+            # storage.update(dict(
+            #     work=False,
+            # ))
+            data.work = False
+            storage.update(data)
+            return '任务已取消'
 
-        if cls.PStatus.set(parameters):
+        if cls.PStatus.is_set_in(parameters):
             if not data.work:
                 return '暂无监控任务'
-            return '正在监控：%s\n' \
-                   '任务开始时间：%s\n' \
-                   '已监控次数：%s\n' \
-                   % (data.name,
-                      cls.readable_time(data.create_time),
-                      data.visit_times)
+            return Para(
+                '正在监控：%s' % data.name,
+                '任务开始时间：%s' % cls.readable_time(data.create_time),
+                '已监控次数：%s' % data.visit_times)
 
         if not args:
             return cls.need_help()
@@ -84,8 +86,8 @@ class WatchService(Service):
 
         key = cls.get_key_of(url)
         name = urlparse(url).netloc
-        if cls.PName.set(parameters):
-            name = cls.PName.get(parameters)
+        if cls.PName.is_set_in(parameters):
+            name = cls.PName.get_in(parameters)
 
         crt_time = datetime.datetime.now().timestamp()
         storage.update(dict(
@@ -102,9 +104,9 @@ class WatchService(Service):
         return '监控已开启'
 
     @classmethod
-    def async_work_handler(cls, service_data_list: List[ServiceData]):
-        for service_data in service_data_list:
-            cls.async_work(service_data)
+    def async_user_handler(cls, storage_list: List[ServiceData]):
+        for service_data in storage_list:
+            cls.async_user(service_data)
 
     @staticmethod
     def get_key_of(url):
@@ -117,8 +119,8 @@ class WatchService(Service):
         return md5(content)
 
     @classmethod
-    def async_work(cls, service_data: ServiceData):
-        data = service_data.classify()
+    def async_user(cls, storage: ServiceData):
+        data = storage.classify()
         if not data.work:
             return
 
@@ -135,13 +137,13 @@ class WatchService(Service):
         except E:
             data.error_times += 1
             if data.error_times == 3:
-                Phone.announce(service_data.user, cls, '监控任务%s网页连续三次无法访问，已停止任务' % data.name)
-                service_data.update(dict(work=False))
+                Phone.announce(storage.user, cls, '监控任务%s网页连续三次无法访问，已停止任务' % data.name)
+                storage.update(dict(work=False))
             return
 
         if data.key != key:
-            Phone.announce(service_data.user, cls, '监控任务%s的网页发生变化' % data.name)
-            service_data.update(dict(work=False))
+            Phone.announce(storage.user, cls, '监控任务%s的网页发生变化' % data.name)
+            storage.update(dict(work=False))
             return
 
-        service_data.update(data)
+        storage.update(data)

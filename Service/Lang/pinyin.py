@@ -1,5 +1,6 @@
 from smartify import P
 
+from Base.para import Para
 from Base.tools import Tools
 from Service.models import ServiceData, Service, Parameter
 
@@ -8,14 +9,15 @@ from Service.models import ServiceData, Service, Parameter
 class PinyinService(Service):
     name = 'pinyin'
     desc = '汉字转拼音'
-    long_desc = "👉pinyin 林俊杰\n" \
-                "✅lín jùn jié\n" \
-                "当输入单个汉字且是多音字时，默认返回该字的所有拼音\n" \
-                "👉pinyin 给\n" \
-                "✅gěi/jǐ\n" \
-                "可以使用-s或--single来获得单个拼音\n" \
-                "👉pinyin -s 给\n" \
-                "✅gěi"
+    long_desc = Para(
+        "👉pinyin 林俊杰",
+        "✅lín jùn jié",
+        "当输入单个汉字且是多音字时，默认返回该字的所有拼音",
+        "👉pinyin 给",
+        "✅gěi/jǐ",
+        "可以使用-s或--single来获得单个拼音",
+        "👉pinyin -s 给",
+        "✅gěi")
 
     PSingle = Parameter(P(read_name='多音字返回一个拼音').default(), long='single', short='s')
 
@@ -25,7 +27,7 @@ class PinyinService(Service):
             return cls.need_help()
         text = args[0]
 
-        heteronym_when_single = not cls.PSingle.set(parameters)
+        heteronym_when_single = not cls.PSingle.is_set_in(parameters)
         print(parameters)
         resp = Tools.get(Tools.Pinyin, {
             'text': text,

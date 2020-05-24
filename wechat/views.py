@@ -80,8 +80,10 @@ class ServiceView(View):
 
         for name in ServiceDepot.services:
             service = ServiceDepot.services[name]
-            if service.async_task:
+            if service.async_user_task:
                 service_data_list = ServiceData.objects.filter(service=name)
-                service.async_work_handler(service_data_list)
+                service.async_user_handler(service_data_list)
+            if service.async_service_task:
+                service.async_service(ServiceData.get_or_create(service, None))
 
         return '异步任务完成'

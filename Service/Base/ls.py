@@ -1,6 +1,7 @@
 from SmartDjango import E
 from smartify import P
 
+from Base.para import Para
 from Base.root import ROOT_NAME
 from Service.models import ServiceData, Service, Parameter, ServiceDepot
 
@@ -16,8 +17,9 @@ class LSError:
 class LSService(Service):
     name = 'ls'
     desc = '查看工具箱'
-    long_desc = '👉ls lang\n' \
-                '👉ls ../web'
+    long_desc = Para(
+        '👉ls lang',
+        '👉ls ../web')
 
     PLong = Parameter(P(read_name='是否显示完整信息').default(), short='l')
 
@@ -48,7 +50,7 @@ class LSService(Service):
         paths = args[0] if args else ''
         terminal = cls.find_path(directory, paths)
 
-        long = cls.PLong.set(parameters)
+        long = cls.PLong.is_set_in(parameters)
         messages = ['%s中拥有以下工具：' % terminal.name]
         for child in terminal.get_services():
             name = child.name + ['（工具）', '（工具箱）'][child.as_dir]

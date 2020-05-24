@@ -1,5 +1,6 @@
 from SmartDjango import E
 
+from Base.para import Para
 from Service.Base.ls import LSService
 from Service.models import ServiceData, Service
 
@@ -13,8 +14,9 @@ class CDError:
 class CDService(Service):
     name = 'cd'
     desc = '切换工具箱'
-    long_desc = '👉cd lang\n' \
-                '👉cd ../web'
+    long_desc = Para(
+        '👉cd lang',
+        '👉cd ../web')
 
     @classmethod
     def run(cls, directory: Service, storage: ServiceData, parameters: dict, *args):

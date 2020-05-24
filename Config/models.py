@@ -53,10 +53,12 @@ class Config(models.Model):
             else:
                 raise e
         except Exception as err:
-            ConfigError.CREATE(debug_message=err)
+            raise ConfigError.CREATE(debug_message=err)
 
 
 class ConfigInstance:
+    ADMIN_PHONE = 'admin-phone'
+
     WX_TOKEN = 'wx-Token'
     WX_AES_KEY = 'wx-EncodingAESKey'
     WX_APP_ID = 'wx-AppID'

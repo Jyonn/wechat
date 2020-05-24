@@ -4,6 +4,7 @@ from SmartDjango import E
 from django.utils.crypto import get_random_string
 from smartify import P
 
+from Base.para import Para
 from Base.phone import Phone
 from Service.models import ServiceData, Service, Parameter
 
@@ -22,11 +23,12 @@ def phone_validator(phone):
 class BindPhoneService(Service):
     name = 'bind'
     desc = '绑定手机号'
-    long_desc = '用于推送其他功能产生的结果\n' \
-                '手机号绑定后暂不支持更改\n' \
-                '目前只支持中国大陆的手机号码\n' \
-                '设置手机号并发送验证码：bind -p13xxxxxxxxx\n' \
-                '验证码反馈完成手机绑定：bind -c123456'
+    long_desc = Para(
+        '用于推送其他功能产生的结果',
+        '手机号绑定后暂不支持更改',
+        '目前只支持中国大陆的手机号码',
+        '设置手机号并发送验证码：bind -p13xxxxxxxxx',
+        '验证码反馈完成手机绑定：bind -c123456')
 
     WAIT = 0
     DONE = 1
@@ -63,8 +65,8 @@ class BindPhoneService(Service):
         crt_time = datetime.datetime.now().timestamp()
         last_time = data.last_time or 0
 
-        if cls.PPhone.set(parameters):
-            phone = cls.PPhone.get(parameters)
+        if cls.PPhone.is_set_in(parameters):
+            phone = cls.PPhone.get_in(parameters)
             captcha = get_random_string(length=6, allowed_chars='1234567890')
 
             send_wait = last_time + 60 - crt_time
@@ -79,7 +81,7 @@ class BindPhoneService(Service):
                 attempt=3,
             ))
             return '验证码已发送，五分钟内有效，请使用bind -c命令验证'
-        elif cls.PCaptcha.set(parameters):
+        elif cls.PCaptcha.is_set_in(parameters):
             if not data.attempt:
                 return '请重新发送验证码'
 
@@ -88,7 +90,7 @@ class BindPhoneService(Service):
             if last_time + 5 * 60 < crt_time:
                 return '验证码有效期五分钟已超出，请重新发送'
 
-            captcha = cls.PCaptcha.get(parameters)
+            captcha = cls.PCaptcha.get_in(parameters)
 
             if captcha != data.captcha:
                 return '验证码错误，您还有%s次重试机会' % data.attempt

@@ -4,6 +4,8 @@ import requests
 from SmartDjango import E
 
 from Base.common import YP_KEY
+from Service.models import ServiceData
+from User.models import User
 
 
 @E.register(id_processor=E.idp_cls_prefix())
@@ -43,6 +45,11 @@ class Phone:
 
     @classmethod
     def announce(cls, user, service, message):
+        if isinstance(user, ServiceData):
+            user = user.user
+        if isinstance(user, User):
+            user = user.phone
+
         text = cls.templates['announce'].replace(
             '#name#', service.name).replace('#message#', message)
-        cls._send(user.phone, text)
+        cls._send(user, text)
