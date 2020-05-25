@@ -107,7 +107,7 @@ class ServiceData(models.Model):
             return cls.objects.create(service=service, user=user)
 
     def interact(self):
-        self.interaction_times = F('interaction_times') + 1
+        self.interact_times = F('interact_times') + 1
         self.save()
         self.refresh_from_db()
 
