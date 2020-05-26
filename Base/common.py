@@ -10,8 +10,8 @@ from Config.models import Config, CI
 DEV_MODE = True
 
 
-def data_packer(resp):
-    return resp['body'] or ''
+# def data_packer(resp):
+#     return resp['body'] or ''
 
 
 def body_packer(func):
