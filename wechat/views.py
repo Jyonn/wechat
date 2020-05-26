@@ -50,6 +50,7 @@ class MessageView(View):
 
 class TestView(View):
     @staticmethod
+    @Auth.only_localhost
     @Analyse.r(b=['command'])
     def post(r):
         user = User.objects.get(pk=1)

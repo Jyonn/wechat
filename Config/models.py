@@ -70,6 +70,10 @@ class ConfigInstance:
     YP_KEY = 'yp-Key'
 
     SECRET_KEY = 'secret_key'
+    JWT_ENCODE_ALGO = 'jwt_encode_algo'
+
+    QIX_APP_ID = 'qiX-AppID'
+    QIX_APP_SECRET = 'qiX-AppSecret'
 
 
 CI = ConfigInstance

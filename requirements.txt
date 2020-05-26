@@ -1,0 +1,6 @@
+PyJWT
+wechatpy
+requests
+pycrypto
+django
+SmartDjango==3.6.7a2

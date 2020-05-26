@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'Config',
     'User',
     'Service',
+    'Article',
 ]
 
 MIDDLEWARE = [
