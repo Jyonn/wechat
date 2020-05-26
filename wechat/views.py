@@ -9,7 +9,7 @@ from wechatpy.messages import TextMessage, BaseMessage
 from wechatpy.replies import TextReply, ArticlesReply
 
 from Base.auth import Auth
-from Base.common import wechat_client, SECRET_KEY
+from Base.common import wechat_client, SECRET_KEY, body_packer
 from Base.handler import MessageHandler
 from Config.models import Config, CI
 from Service.models import ServiceDepot, ServiceData
@@ -18,12 +18,14 @@ from User.models import UserP, User
 
 class MessageView(View):
     @staticmethod
+    @body_packer
     @Analyse.r(q=['signature', 'timestamp', 'nonce', 'echostr'])
     @Auth.wechat
     def get(r):
         return r.d.echostr
 
     @staticmethod
+    @body_packer
     @Analyse.r(q=['signature', 'timestamp', 'nonce', UserP.openid])
     @Auth.wechat
     def post(r):
@@ -50,6 +52,7 @@ class MessageView(View):
 
 class TestView(View):
     @staticmethod
+    @body_packer
     @Auth.only_localhost
     @Analyse.r(b=['command'])
     def post(r):

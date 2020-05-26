@@ -1,6 +1,7 @@
 import hashlib
 
-from SmartDjango import NetPacker
+from SmartDjango import NetPacker, E
+from django.http import HttpResponse
 from wechatpy import WeChatClient
 
 from Config.models import Config, CI
@@ -8,12 +9,27 @@ from Config.models import Config, CI
 
 DEV_MODE = True
 
+
 def data_packer(resp):
     return resp['body'] or ''
 
 
+def body_packer(func):
+    def wrapper(r, *args, **kwargs):
+        try:
+            data = func(r, *args, **kwargs)
+        except E:
+            data = ''
+        return HttpResponse(
+            data,
+            status=200,
+            content_type="application/json; encoding=utf-8",
+        )
+    return wrapper
+
+
 NetPacker.set_mode(debug=True)
-NetPacker.customize_data_packer(data_packer)
+# NetPacker.customize_data_packer(data_packer)
 
 ADMIN_PHONE = Config.get_value_by_key(CI.ADMIN_PHONE)
 
