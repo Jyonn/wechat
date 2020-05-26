@@ -8,7 +8,7 @@ from User.models import MiniUser
 
 class CodeView(View):
     @staticmethod
-    @Analyse.r(['code'])
+    @Analyse.r(q=['code'])
     def get(r):
         code = r.d.code
 
