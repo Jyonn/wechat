@@ -21,12 +21,6 @@ class ArticleView(View):
 
 class CommentView(View):
     @staticmethod
-    @Analyse.r(a=[ArticleP.aid_getter])
-    def get(r):
-        article = r.d.artcile
-        return article.d_comments()
-
-    @staticmethod
     @Analyse.r(b=[CommentP.content, CommentP.reply_to_getter], a=[ArticleP.aid_getter])
     @Auth.require_login
     def post(r):

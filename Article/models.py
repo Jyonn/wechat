@@ -81,14 +81,14 @@ class Article(models.Model):
     def _readable_create_time(self):
         return self.create_time.timestamp()
 
+    def _readable_comments(self):
+        return self.comment_set.filter(reply_to=None).dict(Comment.d_replies)
+
     def d(self):
-        return self.dictify('aid', 'title', 'origin', 'author', 'create_time')
+        return self.dictify('aid', 'title', 'origin', 'author', 'create_time', 'comments')
 
     def d_create(self):
         return self.dictify('aid')
-
-    def d_comments(self):
-        return self.comment_set.filter(reply_to=None).dict(Comment.d_replies)
 
     def comment(self, user, content):
         return Comment.create(self, user, content)
