@@ -30,6 +30,12 @@ class Article(models.Model):
         default=None,
     )
 
+    author = models.CharField(
+        max_length=20,
+        null=True,
+        default=None,
+    )
+
     create_time = models.DateTimeField(
         auto_now_add=True,
     )
@@ -55,11 +61,13 @@ class Article(models.Model):
                 return aid
 
     @classmethod
-    def create(cls, user, title):
+    def create(cls, user, author, origin, title):
         try:
             return cls.objects.create(
                 user=user,
                 title=title,
+                author=author,
+                origin=origin,
                 aid=cls.get_unique_id(),
             )
         except Exception as err:
@@ -70,7 +78,13 @@ class Article(models.Model):
         self.title = title
         self.save()
 
+    def _readable_create_time(self):
+        return self.create_time.timestamp()
+
     def d(self):
+        return self.dictify('aid', 'title', 'origin', 'author', 'create_time')
+
+    def d_create(self):
         return self.dictify('aid')
 
     def d_comments(self):
@@ -81,7 +95,7 @@ class Article(models.Model):
 
 
 class ArticleP:
-    aid, origin, title = Article.P('aid', 'origin', 'title')
+    aid, origin, title, author = Article.P('aid', 'origin', 'title', 'author')
     aid_getter = aid.rename('aid', yield_name='article', stay_origin=True).process(Article.get)
 
 

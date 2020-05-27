@@ -7,15 +7,27 @@ from Base.auth import Auth
 
 class ArticleView(View):
     @staticmethod
-    @Analyse.r([ArticleP.title])
+    @Analyse.r(q=[ArticleP.aid_getter])
+    def get(r):
+        article = r.d.artcile
+        return article.d()
+
+    @staticmethod
+    @Analyse.r([ArticleP.title, ArticleP.origin, ArticleP.author])
     @Auth.require_login
     def post(r):
-        return Article.create(r.user, r.d.title).d_create()
+        return Article.create(r.user, **r.d.dict()).d_create()
 
 
 class CommentView(View):
     @staticmethod
-    @Analyse.r([ArticleP.aid_getter, CommentP.content, CommentP.reply_to_getter])
+    @Analyse.r(a=[ArticleP.aid_getter])
+    def get(r):
+        article = r.d.artcile
+        return article.d_comments()
+
+    @staticmethod
+    @Analyse.r(b=[CommentP.content, CommentP.reply_to_getter], a=[ArticleP.aid_getter])
     @Auth.require_login
     def post(r):
         article = r.d.artcile  # type: Article
