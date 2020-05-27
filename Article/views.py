@@ -9,7 +9,7 @@ class ArticleView(View):
     @staticmethod
     @Analyse.r(q=[ArticleP.aid_getter])
     def get(r):
-        article = r.d.artcile
+        article = r.d.article
         return article.d()
 
     @staticmethod
