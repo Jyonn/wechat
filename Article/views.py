@@ -24,7 +24,7 @@ class CommentView(View):
     @Analyse.r(b=[CommentP.content, CommentP.reply_to_getter], a=[ArticleP.aid_getter])
     @Auth.require_login
     def post(r):
-        article = r.d.artcile  # type: Article
+        article = r.d.article  # type: Article
         content = r.d.content
         reply_to = r.d.reply_to  # type: Comment
 
