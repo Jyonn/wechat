@@ -17,10 +17,7 @@ class CodeView(View):
         session_key = data['session_key']
 
         user = MiniUser.get_or_create(openid)
-        data = Auth.get_login_token(user, session_key=session_key)
-        response = NetPacker.send(data)
-        response.set_cookie('token', data['token'])
-        return response
+        return Auth.get_login_token(user, session_key=session_key)
 
 
 class UserView(View):
