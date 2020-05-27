@@ -20,7 +20,8 @@ class AuthError:
 class Auth:
     @staticmethod
     def validate_token(request):
-        jwt_str = request.META.get('HTTP_TOKEN')
+        # jwt_str = request.META.get('HTTP_TOKEN')
+        jwt_str = request.COOKIES['token']
         if not jwt_str:
             raise AuthError.REQUIRE_LOGIN
 

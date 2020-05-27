@@ -1,4 +1,4 @@
-from SmartDjango import Analyse
+from SmartDjango import Analyse, NetPacker
 from django.views import View
 
 from Base.auth import Auth
@@ -17,7 +17,10 @@ class CodeView(View):
         session_key = data['session_key']
 
         user = MiniUser.get_or_create(openid)
-        return Auth.get_login_token(user, session_key=session_key)
+        data = Auth.get_login_token(user, session_key=session_key)
+        response = NetPacker.send(data)
+        response.set_cookie('token', data['token'])
+        return response
 
 
 class UserView(View):
