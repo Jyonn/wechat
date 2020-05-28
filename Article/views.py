@@ -11,7 +11,7 @@ class ArticleView(View):
     @Auth.require_login
     def get(r):
         user = r.user  # type: MiniUser
-        return user.article_set.all().dict(Article.d_base)
+        return user.article_set.order_by('-create_time').all().dict(Article.d_base)
 
     @staticmethod
     @Analyse.r([ArticleP.title, ArticleP.origin, ArticleP.author])
