@@ -18,7 +18,9 @@ class ArticleView(View):
     @Analyse.r([ArticleP.title, ArticleP.origin, ArticleP.author])
     @Auth.require_login
     def post(r):
-        Weixin.msg_sec_check(' '.join([r.d.title, r.d.origin, r.d.author]))
+        Weixin.msg_sec_check(r.d.title)
+        Weixin.msg_sec_check(r.d.origin)
+        Weixin.msg_sec_check(r.d.author)
         return Article.create(r.user, **r.d.dict()).d_create()
 
 
