@@ -72,4 +72,4 @@ class Weixin:
             if data['errcode'] != 0:
                 raise WeixinError.SAFE_CHECK_FAIL
         except Exception as err:
-            raise WeixinError.SAFE_CHECK_FAIL(debug_message=resp.content)
+            raise WeixinError.SAFE_CHECK_FAIL

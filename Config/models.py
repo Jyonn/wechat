@@ -67,6 +67,9 @@ class ConfigInstance:
     WX_ACCESS_TOKEN = 'wx-AccessToken'
     WX_ACCESS_TOKEN_EXPIRE = 'wx-AccessTokenExpire'
 
+    QIX_ACCESS_TOKEN = 'qiX-AccessToken'
+    QIX_ACCESS_TOKEN_EXPIRE = 'qiX-AccessTokenExpire'
+
     YP_KEY = 'yp-Key'
 
     SECRET_KEY = 'secret_key'

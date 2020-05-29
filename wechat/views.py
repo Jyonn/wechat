@@ -5,11 +5,11 @@ from SmartDjango import Analyse, E
 from django.views import View
 from wechatpy import parse_message
 from wechatpy.events import BaseEvent
-from wechatpy.messages import TextMessage, BaseMessage
-from wechatpy.replies import TextReply, ArticlesReply
+from wechatpy.messages import TextMessage
+from wechatpy.replies import TextReply
 
 from Base.auth import Auth
-from Base.common import wechat_client, SECRET_KEY, body_packer
+from Base.common import wechat_client, SECRET_KEY, body_packer, qiX_client
 from Base.handler import MessageHandler
 from Config.models import Config, CI
 from Service.models import ServiceDepot, ServiceData
@@ -66,12 +66,19 @@ class TestView(View):
 class AccessTokenView(View):
     @staticmethod
     def get(r):
-        expire_time = float(Config.get_value_by_key(CI.WX_ACCESS_TOKEN_EXPIRE) or '0')
         crt_time = datetime.datetime.now().timestamp()
+
+        expire_time = float(Config.get_value_by_key(CI.WX_ACCESS_TOKEN_EXPIRE) or '0')
         if crt_time + 10 * 60 > expire_time:
             data = wechat_client.fetch_access_token()
             Config.update_value(CI.WX_ACCESS_TOKEN, data['access_token'])
             Config.update_value(CI.WX_ACCESS_TOKEN_EXPIRE, str(crt_time + data['expires_in']))
+
+        qix_expire_time = float(Config.get_value_by_key(CI.QIX_ACCESS_TOKEN_EXPIRE) or '0')
+        if crt_time + 10 * 60 > qix_expire_time:
+            data = qiX_client.fetch_access_token()
+            Config.update_value(CI.QIX_ACCESS_TOKEN, data['access_token'])
+            Config.update_value(CI.QIX_ACCESS_TOKEN_EXPIRE, str(crt_time + data['expires_in']))
         return 0
 
 

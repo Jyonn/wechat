@@ -47,6 +47,7 @@ SECRET_KEY = Config.get_value_by_key(CI.SECRET_KEY)
 JWT_ENCODE_ALGO = Config.get_value_by_key(CI.JWT_ENCODE_ALGO)
 
 wechat_client = WeChatClient(appid=WX_APP_ID, secret=WX_APP_SECRET)
+qiX_client = WeChatClient(appid=QIX_APP_ID, secret=QIX_APP_SECRET)
 
 
 def md5(b):
