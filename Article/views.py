@@ -3,6 +3,7 @@ from django.views import View
 
 from Article.models import ArticleP, Article, CommentP, Comment
 from Base.auth import Auth
+from Base.weixin import Weixin
 from User.models import MiniUser
 
 
@@ -11,12 +12,13 @@ class ArticleView(View):
     @Auth.require_login
     def get(r):
         user = r.user  # type: MiniUser
-        return user.article_set.order_by('-create_time').all().dict(Article.d_base)
+        return user.article_set.order_by('-pk').all().dict(Article.d_base)
 
     @staticmethod
     @Analyse.r([ArticleP.title, ArticleP.origin, ArticleP.author])
     @Auth.require_login
     def post(r):
+        Weixin.msg_sec_check(' '.join([r.d.title, r.d.origin, r.d.author]))
         return Article.create(r.user, **r.d.dict()).d_create()
 
 
@@ -36,6 +38,8 @@ class CommentView(View):
         article = r.d.article  # type: Article
         content = r.d.content
         reply_to = r.d.reply_to  # type: Comment
+
+        Weixin.msg_sec_check(content)
 
         if reply_to:
             return reply_to.reply(r.user, content).d()

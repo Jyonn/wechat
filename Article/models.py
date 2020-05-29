@@ -1,6 +1,5 @@
 from SmartDjango import models, E
 from django.utils.crypto import get_random_string
-from smartify import P
 
 
 @E.register(id_processor=E.idp_cls_prefix())
@@ -82,7 +81,7 @@ class Article(models.Model):
         return self.create_time.timestamp()
 
     def _readable_comments(self):
-        return self.comment_set.filter(reply_to=None).dict(Comment.d_replies)
+        return self.comment_set.filter(reply_to=None).order_by('pk').dict(Comment.d_replies)
 
     def d_base(self):
         return self.dictify('aid', 'title', 'origin', 'author', 'create_time')

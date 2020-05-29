@@ -7,12 +7,16 @@ import base64
 import json
 from Crypto.Cipher import AES
 
+from Config.models import CI, Config
+
 
 @E.register(id_processor=E.idp_cls_prefix())
 class WeixinError:
     JS_CODE = E("需要鉴权代码")
     APP_ID = E("错误的小程序ID")
     DECRYPT = E("用户信息提取失败")
+    SAFE_CHECK_FAIL = E("敏感检测失败", hc=500)
+    CONTENT_UNSAFE = E("存在敏感内容", hc=403)
 
 
 class Weixin:
@@ -21,6 +25,8 @@ class Weixin:
                        '&secret=%s' \
                        '&js_code=%s' \
                        '&grant_type=authorization_code'
+
+    MSG_SEC_CHECK_URL = 'https://api.weixin.qq.com/wxa/msg_sec_check?access_token=%s'
 
     @staticmethod
     def code2session(code):
@@ -53,3 +59,18 @@ class Weixin:
     @staticmethod
     def _un_pad(s):
         return s[:-ord(s[len(s)-1:])]
+
+    @classmethod
+    def msg_sec_check(cls, content):
+        access_token = Config.get_value_by_key(CI.WX_ACCESS_TOKEN)
+        try:
+            data = json.dumps(dict(content=content), ensure_ascii=False)
+            data = data.encode()
+            resp = requests.post(cls.MSG_SEC_CHECK_URL % access_token, data=data)
+            data = resp.json()
+            if data['errcode'] == 87014:
+                raise WeixinError.CONTENT_UNSAFE
+            if data['errcode'] != 0:
+                raise WeixinError.SAFE_CHECK_FAIL
+        except Exception:
+            raise WeixinError.SAFE_CHECK_FAIL
