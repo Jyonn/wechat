@@ -64,13 +64,12 @@ class Weixin:
     def msg_sec_check(cls, content):
         access_token = Config.get_value_by_key(CI.WX_ACCESS_TOKEN)
         try:
-            data = json.dumps(dict(content=content), ensure_ascii=False)
-            data = data.encode()
-            resp = requests.post(cls.MSG_SEC_CHECK_URL % access_token, data=data)
+            resp = requests.post(
+                cls.MSG_SEC_CHECK_URL % access_token, json=dict(content=content))
             data = resp.json()
             if data['errcode'] == 87014:
                 raise WeixinError.CONTENT_UNSAFE
             if data['errcode'] != 0:
                 raise WeixinError.SAFE_CHECK_FAIL
         except Exception as err:
-            raise WeixinError.SAFE_CHECK_FAIL(debug_message=err)
+            raise WeixinError.SAFE_CHECK_FAIL(debug_message=resp.content)
