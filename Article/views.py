@@ -31,6 +31,14 @@ class ArticleIDView(View):
         article = r.d.article
         return article.d()
 
+    @staticmethod
+    @Analyse.r(a=[ArticleP.aid_getter])
+    @Auth.require_login
+    def delete(r):
+        article = r.d.article
+        article.assert_belongs_to(r.user)
+        article.remove()
+
 
 class CommentView(View):
     @staticmethod

@@ -8,6 +8,7 @@ class ArticleError:
     CREATE = E("添加文章失败")
     CREATE_COMMENT = E("留言失败")
     NOT_FOUND_COMMENT = E("找不到留言")
+    NOT_OWNER = E("没有权限")
 
 
 class Article(models.Model):
@@ -76,6 +77,13 @@ class Article(models.Model):
         self.origin = origin
         self.title = title
         self.save()
+
+    def assert_belongs_to(self, user):
+        if self.user != user:
+            raise ArticleError.NOT_OWNER
+
+    def remove(self):
+        self.delete()
 
     def _readable_create_time(self):
         return self.create_time.timestamp()
