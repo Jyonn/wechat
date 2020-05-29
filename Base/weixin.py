@@ -64,10 +64,12 @@ class Weixin:
     def msg_sec_check(cls, content):
         access_token = Config.get_value_by_key(CI.QIX_ACCESS_TOKEN)
         try:
-            resp = requests.post(
-                cls.MSG_SEC_CHECK_URL % access_token, json=dict(content=content))
+            data = json.dumps(dict(content=content), ensure_ascii=False)
+            data = data.encode()
+            resp = requests.post(cls.MSG_SEC_CHECK_URL % access_token, data=data)
             data = resp.json()
             print(cls.MSG_SEC_CHECK_URL % access_token)
+            print(content)
             print(data)
             if data['errcode'] == 87014:
                 raise WeixinError.CONTENT_UNSAFE
