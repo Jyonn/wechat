@@ -68,12 +68,11 @@ class Weixin:
             data = data.encode()
             resp = requests.post(cls.MSG_SEC_CHECK_URL % access_token, data=data)
             data = resp.json()
-            print(cls.MSG_SEC_CHECK_URL % access_token)
-            print(content)
-            print(data)
             if data['errcode'] == 87014:
                 raise WeixinError.CONTENT_UNSAFE
             if data['errcode'] != 0:
                 raise WeixinError.SAFE_CHECK_FAIL
-        except Exception as err:
+        except E as e:
+            raise e
+        except Exception:
             raise WeixinError.SAFE_CHECK_FAIL
