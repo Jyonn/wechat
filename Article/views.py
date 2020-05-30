@@ -17,7 +17,7 @@ class ArticleView(View):
         if r.d.role == 'owner':
             return user.article_set.order_by('-pk').all().dict(Article.d_base)
         else:
-            return list(map(Article.d_base, user.get_commented_articles()))
+            return list(map(lambda aid: Article.get(aid).d_base(), user.get_commented_articles()))
 
     @staticmethod
     @Analyse.r([ArticleP.title, ArticleP.origin, ArticleP.author])

@@ -123,8 +123,8 @@ class MiniUser(models.Model):
             raise MiniUserError.CREATE(debug_message=err)
 
     def get_commented_articles(self):
-        comments = self.comment_set.values('article').order_by('article').distinct()
-        articles = [comment.article for comment in comments]
+        comments = self.comment_set.values('article__aid').order_by('article__aid').distinct()
+        articles = [comment["article"] for comment in comments]
         return articles
 
     def update(self, avatar, nickname):
