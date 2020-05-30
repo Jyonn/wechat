@@ -91,11 +91,14 @@ class Article(models.Model):
     def _readable_comments(self):
         return self.comment_set.filter(reply_to=None).order_by('pk').dict(Comment.d_replies)
 
+    def _readable_user(self):
+        return self.user.d()
+
     def d_base(self):
         return self.dictify('aid', 'title', 'origin', 'author', 'create_time')
 
     def d(self):
-        return self.dictify('aid', 'title', 'origin', 'author', 'create_time', 'comments')
+        return self.dictify('aid', 'title', 'origin', 'author', 'create_time', 'comments', 'user')
 
     def d_create(self):
         return self.dictify('aid')
