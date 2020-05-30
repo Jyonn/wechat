@@ -1,5 +1,10 @@
+from typing import Union
+
 from SmartDjango import models, E
 from django.utils.crypto import get_random_string
+from smartify import P
+
+from User.models import User
 
 
 @E.register(id_processor=E.idp_cls_prefix())
@@ -9,6 +14,7 @@ class ArticleError:
     CREATE_COMMENT = E("留言失败")
     NOT_FOUND_COMMENT = E("找不到留言")
     NOT_OWNER = E("没有权限")
+    NOT_MATCH = E("评论和文章不匹配")
 
 
 class Article(models.Model):
@@ -167,6 +173,17 @@ class Comment(models.Model):
         except Exception as err:
             raise ArticleError.CREATE_COMMENT(debug_message=err)
 
+    def assert_belongs_to(self, owner: Union[Article, User]):
+        if isinstance(owner, Article):
+            if self.article != owner:
+                raise ArticleError.NOT_MATCH
+        else:
+            if owner not in [self.user, self.article.user]:
+                raise ArticleError.NOT_OWNER
+
+    def remove(self):
+        self.delete()
+
     def _readable_create_time(self):
         return self.create_time.timestamp()
 
@@ -184,4 +201,5 @@ class Comment(models.Model):
 
 class CommentP:
     content, reply_to = Comment.P('content', 'reply_to')
+    cid_getter = P('cid', yield_name='comment').process(int).process(Comment.get)
     reply_to_getter = reply_to.process(Comment.get)

@@ -54,3 +54,18 @@ class CommentView(View):
         if reply_to:
             return reply_to.reply(r.user, content).d()
         return article.comment(r.user, content).d()
+
+
+class CommentIDView(View):
+    @staticmethod
+    @Analyse.r(a=[ArticleP.aid_getter, CommentP.cid_getter])
+    @Auth.require_login
+    def post(r):
+        article = r.d.article
+        comment = r.d.comment
+        user = r.user
+
+        comment.assert_belongs_to(article)
+        comment.assert_belongs_to(user)
+
+        comment.remove()
