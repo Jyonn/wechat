@@ -10,7 +10,7 @@ from User.models import MiniUser
 
 class ArticleView(View):
     @staticmethod
-    @Analyse.r(q=[P('role', '角色').default('comment')])
+    @Analyse.r(q=[P('role', '角色').default('owner')])
     @Auth.require_login
     def get(r):
         user = r.user  # type: MiniUser
