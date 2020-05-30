@@ -85,13 +85,16 @@ class Article(models.Model):
                 return aid
 
     @classmethod
-    def create(cls, user, author, origin, title):
+    def create(cls, user, author, origin, title, self_product, require_review, allow_open_reply):
         try:
             return cls.objects.create(
                 user=user,
                 title=title,
                 author=author,
                 origin=origin,
+                self_product=self_product,
+                require_review=require_review,
+                allow_open_reply=allow_open_reply,
                 aid=cls.get_unique_id(),
             )
         except Exception as err:
