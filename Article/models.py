@@ -53,16 +53,19 @@ class Article(models.Model):
     self_product = models.BooleanField(
         verbose_name='原创声明',
         default=False,
+        null=True,
     )
 
     require_review = models.BooleanField(
         verbose_name='需要审核',
         default=False,
+        null=True,
     )
 
     allow_open_reply = models.BooleanField(
         verbose_name='允许公开回复',
         default=False,
+        null=True,
     )
 
     @classmethod
