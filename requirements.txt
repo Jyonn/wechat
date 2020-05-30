@@ -3,4 +3,4 @@ wechatpy
 requests
 pycrypto
 django
-SmartDjango==3.6.7a2
+SmartDjango==3.6.8

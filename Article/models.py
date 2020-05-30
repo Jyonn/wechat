@@ -116,8 +116,17 @@ class Article(models.Model):
     def _readable_create_time(self):
         return self.create_time.timestamp()
 
-    def _readable_comments(self):
-        return self.comment_set.filter(reply_to=None).order_by('pk').dict(Comment.d_replies)
+    def _readable_comments(self, show_all=False):
+        if not self.require_review and show_all:
+            return
+        comments = self.comment_set.filter(reply_to=None)
+        if self.require_review:
+            comments = comments.filter(selected=True)
+        return comments.order_by('pk').dict(Comment.d_replies, show_all)
+
+    def _readable_my_comments(self, user):
+        return self.comment_set.filter(
+            user=user, reply_to=None).order_by('pk').dict(Comment.d_replies)
 
     def _readable_user(self):
         return self.user.d()
@@ -127,9 +136,12 @@ class Article(models.Model):
             'aid', 'title', 'origin', 'author', 'create_time', 'self_product',
             'require_review', 'allow_open_reply')
 
-    def d(self):
+    def d(self, user):
         d = self.d_base()
-        d.update(self.dictify('comments', 'user'))
+        if self.user == user:
+            d.update(self.dictify('comments', 'user', ('comments->all_comments', True)))
+        else:
+            d.update(self.dictify('comments', 'user', ('my_comments', user)))
         return d
 
     def d_create(self):
@@ -225,8 +237,11 @@ class Comment(models.Model):
     def d(self):
         return self.dictify('content', 'create_time', 'user', 'pk->cid')
 
-    def d_replies(self):
-        d = dict(replies=self.comment_set.all().dict(Comment.d))
+    def d_replies(self, show_all=False):
+        replies = self.comment_set.all()
+        if self.article.require_review and not show_all:
+            replies = replies.filter(selected=True)
+        d = dict(replies=replies.dict(Comment.d))
         d.update(self.d())
         return d
 

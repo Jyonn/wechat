@@ -39,9 +39,11 @@ class ArticleView(View):
 class ArticleIDView(View):
     @staticmethod
     @Analyse.r(a=[ArticleP.aid_getter])
+    @Auth.require_login
     def get(r):
         article = r.d.article
-        return article.d()
+        d = article.d(r.user)
+        return d
 
     @staticmethod
     @Analyse.r(a=[ArticleP.aid_getter], b=[ArticleP.title, ArticleP.origin, ArticleP.author])
