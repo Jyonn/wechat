@@ -60,7 +60,7 @@ class CommentIDView(View):
     @staticmethod
     @Analyse.r(a=[ArticleP.aid_getter, CommentP.cid_getter])
     @Auth.require_login
-    def post(r):
+    def delete(r):
         article = r.d.article
         comment = r.d.comment
         user = r.user
