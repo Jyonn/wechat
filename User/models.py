@@ -124,7 +124,7 @@ class MiniUser(models.Model):
 
     def get_commented_articles(self):
         comments = self.comment_set.values('article__aid').order_by('article__aid').distinct()
-        articles = [comment["article"] for comment in comments]
+        articles = [comment["article__aid"] for comment in comments]
         return articles
 
     def update(self, avatar, nickname):
