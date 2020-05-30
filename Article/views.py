@@ -32,6 +32,16 @@ class ArticleIDView(View):
         return article.d()
 
     @staticmethod
+    @Analyse.r(a=[ArticleP.aid_getter], b=[ArticleP.title, ArticleP.origin, ArticleP.author])
+    @Auth.require_login
+    def put(r):
+        Weixin.msg_sec_check(r.d.title)
+        Weixin.msg_sec_check(r.d.origin)
+        Weixin.msg_sec_check(r.d.author)
+        article = r.d.article
+        article.update(**r.d.dict('title', 'origin', 'author'))
+
+    @staticmethod
     @Analyse.r(a=[ArticleP.aid_getter])
     @Auth.require_login
     def delete(r):

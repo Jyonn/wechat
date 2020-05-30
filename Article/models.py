@@ -79,9 +79,10 @@ class Article(models.Model):
         except Exception as err:
             raise ArticleError.CREATE(debug_message=err)
 
-    def update(self, origin, title):
+    def update(self, title, origin, author):
         self.origin = origin
         self.title = title
+        self.author = author
         self.save()
 
     def assert_belongs_to(self, user):
