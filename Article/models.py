@@ -50,6 +50,21 @@ class Article(models.Model):
         max_length=50,
     )
 
+    self_product = models.BooleanField(
+        verbose_name='原创声明',
+        default=False,
+    )
+
+    require_review = models.BooleanField(
+        verbose_name='需要审核',
+        default=False,
+    )
+
+    allow_open_reply = models.BooleanField(
+        verbose_name='允许公开回复',
+        default=False,
+    )
+
     @classmethod
     def get(cls, aid):
         try:
@@ -102,10 +117,14 @@ class Article(models.Model):
         return self.user.d()
 
     def d_base(self):
-        return self.dictify('aid', 'title', 'origin', 'author', 'create_time')
+        return self.dictify(
+            'aid', 'title', 'origin', 'author', 'create_time', 'self_product',
+            'require_review', 'allow_open_reply')
 
     def d(self):
-        return self.dictify('aid', 'title', 'origin', 'author', 'create_time', 'comments', 'user')
+        d = self.d_base()
+        d.update(self.dictify('comments', 'user'))
+        return d
 
     def d_create(self):
         return self.dictify('aid')
@@ -115,7 +134,8 @@ class Article(models.Model):
 
 
 class ArticleP:
-    aid, origin, title, author = Article.P('aid', 'origin', 'title', 'author')
+    aid, origin, title, author, self_product, require_review, allow_open_reply = Article.P(
+        'aid', 'origin', 'title', 'author', 'self_product', 'require_review', 'allow_open_reply')
     aid_getter = aid.rename('aid', yield_name='article', stay_origin=True).process(Article.get)
 
 
@@ -141,6 +161,11 @@ class Comment(models.Model):
         on_delete=models.CASCADE,
         null=True,
         default=None,
+    )
+
+    selected = models.BooleanField(
+        verbose_name='精选评论',
+        default=False,
     )
 
     @classmethod

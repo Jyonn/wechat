@@ -20,7 +20,14 @@ class ArticleView(View):
             return list(map(lambda aid: Article.get(aid).d_base(), user.get_commented_articles()))
 
     @staticmethod
-    @Analyse.r([ArticleP.title, ArticleP.origin, ArticleP.author])
+    @Analyse.r([
+        ArticleP.title,
+        ArticleP.origin,
+        ArticleP.author,
+        ArticleP.self_product,
+        ArticleP.require_review,
+        ArticleP.allow_open_reply,
+    ])
     @Auth.require_login
     def post(r):
         Weixin.msg_sec_check(r.d.title)
