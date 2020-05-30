@@ -122,6 +122,11 @@ class MiniUser(models.Model):
         except Exception as err:
             raise MiniUserError.CREATE(debug_message=err)
 
+    def get_commented_articles(self):
+        comments = self.comment_set.values('article').order_by('article').distinct()
+        articles = [comment.article for comment in comments]
+        return articles
+
     def update(self, avatar, nickname):
         self.validator(locals())
         self.avatar = avatar

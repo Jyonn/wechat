@@ -1,5 +1,6 @@
 from SmartDjango import Analyse
 from django.views import View
+from smartify import P
 
 from Article.models import ArticleP, Article, CommentP, Comment
 from Base.auth import Auth
@@ -9,10 +10,14 @@ from User.models import MiniUser
 
 class ArticleView(View):
     @staticmethod
+    @Analyse.r(q=[P('role', '角色').default('owner')])
     @Auth.require_login
     def get(r):
         user = r.user  # type: MiniUser
-        return user.article_set.order_by('-pk').all().dict(Article.d_base)
+        if r.d.role == 'owner':
+            return user.article_set.order_by('-pk').all().dict(Article.d_base)
+        else:
+            return list(map(Article.d_base, user.get_commented_articles()))
 
     @staticmethod
     @Analyse.r([ArticleP.title, ArticleP.origin, ArticleP.author])
