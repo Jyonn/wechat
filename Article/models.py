@@ -15,6 +15,7 @@ class ArticleError:
     NOT_FOUND_COMMENT = E("找不到留言")
     NOT_OWNER = E("没有权限")
     NOT_MATCH = E("评论和文章不匹配")
+    DENY_OPEN_REPLY = E("文章没有开启自由评论回复功能")
 
 
 class Article(models.Model):
@@ -207,6 +208,10 @@ class Comment(models.Model):
 
     def reply(self, user, content):
         reply_to = self.reply_to or self
+        if reply_to and not self.article.allow_open_reply:
+            if user not in [self.article.user, reply_to.user]:
+                raise ArticleError.DENY_OPEN_REPLY
+
         try:
             return Comment.objects.create(
                 article=self.article,
