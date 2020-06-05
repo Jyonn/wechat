@@ -7,7 +7,7 @@ from wechatpy import WeChatClient
 from Config.models import Config, CI
 
 
-DEV_MODE = True
+DEV_MODE = False
 
 
 # def data_packer(resp):
