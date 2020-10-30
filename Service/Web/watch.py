@@ -131,7 +131,7 @@ class WatchService(Service):
             return
 
         crt_time = datetime.datetime.now().timestamp()
-        if data.last_visit_time + 300 * data.interval > crt_time:
+        if data.last_visit_time + 60 * data.interval > crt_time:
             return
 
         data.last_visit_time = crt_time
