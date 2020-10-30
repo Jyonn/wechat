@@ -38,13 +38,15 @@ class WatchService(Service):
     desc = '网页变化监控'
     long_desc = Para(
         '当网页发送变化时，将会发送短信提醒，且任务自动结束',
-        '⚠️监控时间间隔为5分钟',
+        '⚠️监控最短时间单位为1分钟',
         '⚠️暂不支持中文域名网址监控',
         '⚠️网页格式规范，应以http/https开头',
-        '👉watch -n百度 https://abc.com')
+        '👉watch -n百度 https://www.baidu.com',
+        '👉watch -i2 https://www.zju.edu.cn')
 
     async_user_task = True
 
+    PInterval = Parameter(P(read_name='监控时间单位').default(5).process(int), long='interval', short='i')
     PName = Parameter(P(read_name='监控名').default(), long='name', short='n')
     PCancel = Parameter(P(read_name='取消当前任务').default(), long='cancel')
     PStatus = Parameter(P(read_name='查看当前任务').default(), long='status')
@@ -55,7 +57,7 @@ class WatchService(Service):
 
     @classmethod
     def init(cls):
-        cls.validate(cls.PName, cls.PCancel, cls.PStatus)
+        cls.validate(cls.PName, cls.PCancel, cls.PStatus, cls.PInterval)
 
     @classmethod
     def run(cls, directory: 'Service', storage: ServiceData, parameters: dict, *args):
@@ -63,9 +65,6 @@ class WatchService(Service):
 
         data = storage.classify()
         if cls.PCancel.is_set_in(parameters):
-            # storage.update(dict(
-            #     work=False,
-            # ))
             data.work = False
             storage.update(data)
             return '任务已取消'
@@ -89,6 +88,8 @@ class WatchService(Service):
         if cls.PName.is_set_in(parameters):
             name = cls.PName.get_in(parameters)
 
+        interval = cls.PInterval.get_in(parameters)
+
         crt_time = datetime.datetime.now().timestamp()
         storage.update(dict(
             work=True,
@@ -99,6 +100,7 @@ class WatchService(Service):
             create_time=crt_time,
             last_visit_time=crt_time,
             key=key,
+            interval=interval,
         ))
 
         return '监控已开启'
@@ -121,11 +123,13 @@ class WatchService(Service):
     @classmethod
     def async_user(cls, storage: ServiceData):
         data = storage.classify()
+        data.interval = data.interval or cls.PInterval.p.default_value
+
         if not data.work:
             return
 
         crt_time = datetime.datetime.now().timestamp()
-        if data.last_visit_time + 300 > crt_time:
+        if data.last_visit_time + 300 * data.interval > crt_time:
             return
 
         data.last_visit_time = crt_time

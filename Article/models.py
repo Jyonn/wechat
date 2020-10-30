@@ -1,6 +1,7 @@
 from typing import Union
 
 from SmartDjango import models, E
+from django.db.models import Q
 from django.utils.crypto import get_random_string
 from smartify import P
 
@@ -114,6 +115,12 @@ class Article(models.Model):
     def remove(self):
         self.delete()
 
+    def get_comments(self, show_all=False, selected=True):
+        comments = self.comment_set.filter(reply_to=None)
+        if not show_all:
+            comments = comments.filter(selected=selected)
+        return comments.order_by('pk')
+
     def _readable_create_time(self):
         return self.create_time.timestamp()
 
@@ -126,8 +133,11 @@ class Article(models.Model):
         return comments.order_by('pk').dict(Comment.d_replies, show_all)
 
     def _readable_my_comments(self, user):
-        return self.comment_set.filter(
-            user=user, reply_to=None).order_by('pk').dict(Comment.d_replies)
+        if self.require_review:
+            return self.comment_set.filter(
+                ~Q(selected=True), user=user, reply_to=None).order_by('pk').dict(Comment.d_replies)
+        else:
+            return []
 
     def _readable_user(self):
         return self.user.d()
@@ -182,9 +192,9 @@ class Comment(models.Model):
         default=None,
     )
 
-    selected = models.BooleanField(
+    selected = models.NullBooleanField(
         verbose_name='精选评论',
-        default=False,
+        default=None,
     )
 
     @classmethod
@@ -202,6 +212,7 @@ class Comment(models.Model):
                 user=user,
                 content=content,
                 reply_to=None,
+                selected=None,
             )
         except Exception as err:
             raise ArticleError.CREATE_COMMENT(debug_message=err)

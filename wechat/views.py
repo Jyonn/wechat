@@ -11,6 +11,7 @@ from wechatpy.replies import TextReply
 from Base.auth import Auth
 from Base.common import wechat_client, SECRET_KEY, body_packer, qiX_client
 from Base.handler import MessageHandler
+from Base.idx import tidx
 from Config.models import Config, CI
 from Service.models import ServiceDepot, ServiceData
 from User.models import UserP, User
@@ -34,7 +35,8 @@ class MessageView(View):
 
         if message.type == 'event':
             if message.event.startswith('subscribe'):
-                content = '欢迎关注，<a href="https://mp.weixin.qq.com/s/Md6iCGh3OgIr5l2dOMeunw">立即体验MasterWhole</a>！'
+                content = '欢迎关注，<a href="https://mp.weixin.qq.com/s/Md6iCGh3OgIr5l2dOMeunw">' \
+                          '立即体验MasterWhole</a>！'
             else:
                 content = '暂不支持回复非文字消息'
         elif message.type == 'text':
@@ -65,20 +67,27 @@ class TestView(View):
 
 class AccessTokenView(View):
     @staticmethod
-    def get(r):
+    def get(_):
         crt_time = datetime.datetime.now().timestamp()
 
-        expire_time = float(Config.get_value_by_key(CI.WX_ACCESS_TOKEN_EXPIRE) or '0')
-        if crt_time + 10 * 60 > expire_time:
-            data = wechat_client.fetch_access_token()
-            Config.update_value(CI.WX_ACCESS_TOKEN, data['access_token'])
-            Config.update_value(CI.WX_ACCESS_TOKEN_EXPIRE, str(crt_time + data['expires_in']))
+        if tidx.allow_key_maps_constructor():
+            # python >= 3.6
+            client = tidx(client='fetch_access_token', expire=0, access_token=0)
+        else:
+            client = tidx('client', 'expire', 'access_token').map(fetch_access_token=0)
 
-        qix_expire_time = float(Config.get_value_by_key(CI.QIX_ACCESS_TOKEN_EXPIRE) or '0')
-        if crt_time + 10 * 60 > qix_expire_time:
-            data = qiX_client.fetch_access_token()
-            Config.update_value(CI.QIX_ACCESS_TOKEN, data['access_token'])
-            Config.update_value(CI.QIX_ACCESS_TOKEN_EXPIRE, str(crt_time + data['expires_in']))
+        clients = [
+            client(wechat_client, CI.WX_ACCESS_TOKEN_EXPIRE, CI.WX_ACCESS_TOKEN),
+            client(qiX_client, CI.QIX_ACCESS_TOKEN_EXPIRE, CI.QIX_ACCESS_TOKEN),
+        ]
+
+        for client in clients:
+            expire_time = float(Config.get_value_by_key(client.expire) or '0')
+            if crt_time + 10 * 60 > expire_time:
+                data = client.fetch_access_token()
+                Config.update_value(client.access_token, data['access_token'])
+                Config.update_value(client.expire, str(crt_time + data['expires_in']))
+
         return 0
 
 

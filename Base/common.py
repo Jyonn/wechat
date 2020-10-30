@@ -1,9 +1,11 @@
 import hashlib
+from datetime import datetime
 
 from SmartDjango import NetPacker, E
 from django.http import HttpResponse
 from wechatpy import WeChatClient
 
+from Base.logging import Logging
 from Config.models import Config, CI
 
 
@@ -48,6 +50,8 @@ JWT_ENCODE_ALGO = Config.get_value_by_key(CI.JWT_ENCODE_ALGO)
 
 wechat_client = WeChatClient(appid=WX_APP_ID, secret=WX_APP_SECRET)
 qiX_client = WeChatClient(appid=QIX_APP_ID, secret=QIX_APP_SECRET)
+
+logging = Logging(datetime.now().strftime('%Y-%m-%d %H%M%S') + '.log')
 
 
 def md5(b):
