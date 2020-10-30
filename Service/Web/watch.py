@@ -75,7 +75,9 @@ class WatchService(Service):
             return Para(
                 '正在监控：%s' % data.name,
                 '任务开始时间：%s' % cls.readable_time(data.create_time),
-                '已监控次数：%s' % data.visit_times)
+                '已监控次数：%s' % data.visit_times,
+                '监控时间间隔：%s分钟' % data.interval or cls.PInterval.p.default_value
+            )
 
         if not args:
             return cls.need_help()
