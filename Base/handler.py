@@ -64,15 +64,17 @@ class MessageHandler:
         args, kwargs = Parser.parse(command)
         kwargs.update(parameters)
         parameters = service.process_parameters(kwargs)
-        if '--inside' in kwargs:
+        if '--inline' in kwargs:
             user.inside(service.name)
+            self.message = '已进入%s命令，退出请输入--quit' % service.name
+            return
 
         directory = self.get_directory(user)  # type: Service
         # console_line = directory.get_console_line() + service.name + '\n'
         # console_line = LNormalBoldItalic.translate(console_line)
         if '--quit' in kwargs:
             user.inside(None)
-            self.message = ''
+            self.message = '已退出%s命令' % service.name
         else:
             self.message = service.work(directory, storage, parameters, *args) or ''
 
