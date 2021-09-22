@@ -1,4 +1,5 @@
 import datetime
+import string
 
 from SmartDjango import E
 from django.utils.crypto import get_random_string
@@ -11,12 +12,19 @@ from Service.models import ServiceData, Service, Parameter
 
 @E.register(id_processor=E.idp_cls_prefix())
 class BindPhoneError:
-    PHONE_FORMAT = E("手机号格式错误，只支持中国大陆的11位号码")
+    PHONE_FORMAT = E("手机号格式错误")
     
     
 def phone_validator(phone):
-    if len(phone) != 11:
-        raise BindPhoneError.PHONE_FORMAT
+    if phone[0] == '+':
+        digits = phone[1:]
+    else:
+        if len(phone) != 11:
+            raise BindPhoneError.PHONE_FORMAT
+        digits = phone
+    for c in digits:
+        if c not in string.digits:
+            raise BindPhoneError.PHONE_FORMAT
 
 
 @Service.register
@@ -26,7 +34,6 @@ class BindPhoneService(Service):
     long_desc = Para(
         '用于推送其他功能产生的结果',
         '手机号绑定后允许更改',
-        '目前只支持中国大陆的手机号码',
         '设置手机号并发送验证码：bind -p13xxxxxxxxx',
         '非中国大陆手机号发送验证码格式为：bind -p+地区代码+手机号',
         '如香港代码为886，则bind -p+88612345678',
@@ -36,7 +43,6 @@ class BindPhoneService(Service):
     DONE = 1
 
     PPhone = Parameter(P(read_name='手机号')
-                       .process(int)
                        .process(str)
                        .validate(phone_validator),
                        long='phone', short='p')
