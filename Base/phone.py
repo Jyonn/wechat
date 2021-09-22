@@ -19,6 +19,11 @@ class Phone:
         announce='【MasterWhole】命令#name#的运行结果已出：#message#',
     )
 
+    # templates_en = dict(
+    #     validate='[MasterWhole] Your captcha code is #code#',
+    #     announce='[MasterWhole] Tool #name# yields: #message#',
+    # )
+
     send_api = "https://sms.yunpian.com/v2/sms/single_send.json"
 
     @classmethod

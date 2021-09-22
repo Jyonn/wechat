@@ -25,9 +25,11 @@ class BindPhoneService(Service):
     desc = '绑定手机号'
     long_desc = Para(
         '用于推送其他功能产生的结果',
-        '手机号绑定后暂不支持更改',
+        '手机号绑定后允许更改',
         '目前只支持中国大陆的手机号码',
         '设置手机号并发送验证码：bind -p13xxxxxxxxx',
+        '非中国大陆手机号发送验证码格式为：bind -p+地区代码+手机号',
+        '如香港代码为886，则bind -p+88612345678',
         '验证码反馈完成手机绑定：bind -c123456')
 
     WAIT = 0
@@ -59,8 +61,8 @@ class BindPhoneService(Service):
     def run(cls, directory: 'Service', storage: ServiceData, parameters: dict, *args):
         data = storage.classify()
 
-        if data.status:  # 设置手机号
-            return '手机号已绑定，暂不支持更改'
+        # if data.status:  # 设置手机号
+        #     return '手机号已绑定，暂不支持更改'
 
         crt_time = datetime.datetime.now().timestamp()
         last_time = data.last_time or 0
