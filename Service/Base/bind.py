@@ -110,7 +110,7 @@ class BindPhoneService(Service):
             captcha = pd.get(cls.PCaptcha)
             if captcha != data.captcha:
                 raise BindPhoneMessage.CAPTCHA_WRONG(data.attempt)
-            return captcha
+
             storage.user.set_phone(data.phone)
             storage.update(dict(status=cls.DONE))
             raise BindPhoneMessage.SUCCESS
