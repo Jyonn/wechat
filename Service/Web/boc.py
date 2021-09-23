@@ -71,7 +71,7 @@ class BOCService(Service):
     PAsk = Parameter(P(read_name='卖出价').default(), long='ask', short='a')
     PShow = Parameter(P(read_name='显示货币简写列表').default(), long='show', short='s')
     PSms = Parameter(P(read_name='短信提醒').validate(sms_validator), long='sms')
-    PSmsStop = Parameter(P(read_name='停止短信提醒'), long='sms-stop')
+    PSmsStop = Parameter(P(read_name='停止短信提醒').default(), long='sms-stop')
 
     @classmethod
     def init(cls):
