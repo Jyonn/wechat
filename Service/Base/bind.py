@@ -101,7 +101,7 @@ class BindPhoneService(Service):
         elif pd.has(cls.PCaptcha):
             if not data.attempt:
                 raise BindPhoneMessage.CAPTCHA_RESENT
-
+            return '123456'
             data.attempt -= 1
             storage.update(data)
             if last_time + 5 * 60 < crt_time:
@@ -111,9 +111,8 @@ class BindPhoneService(Service):
 
             if captcha != data.captcha:
                 raise BindPhoneMessage.CAPTCHA_WRONG(data.attempt)
-            else:
-                storage.user.set_phone(data.phone)
-                storage.update(dict(status=cls.DONE))
-                raise BindPhoneMessage.SUCCESS
+            storage.user.set_phone(data.phone)
+            storage.update(dict(status=cls.DONE))
+            raise BindPhoneMessage.SUCCESS
         else:
             return cls.need_help()
