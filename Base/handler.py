@@ -76,7 +76,10 @@ class MessageHandler:
             user.inside(None)
             self.message = '已退出%s命令' % service.name
         else:
-            self.message = service.work(directory, storage, parameters, *args) or ''
+            try:
+                self.message = service.work(directory, storage, parameters, *args) or ''
+            except Exception as e:
+                self.message = str(e)
 
         # if not self.is_cmd_hide(user):
         #     self.message = console_line + self.message
