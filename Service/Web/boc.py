@@ -71,7 +71,7 @@ class BOCService(Service):
     PAsk = Parameter(P(read_name='卖出价').default(), long='ask', short='a')
     PShow = Parameter(P(read_name='显示货币简写列表').default(), long='show', short='s')
     PSms = Parameter(P(read_name='短信提醒').validate(sms_validator), long='sms')
-    PSmsStop = Parameter(P(read_name='停止短信提醒').default(), long='sms_stop')
+    PSmsStop = Parameter(P(read_name='停止短信提醒').default(), long='sms-stop')
 
     @classmethod
     def init(cls):
@@ -94,19 +94,19 @@ class BOCService(Service):
         if pd.has(cls.PShow):
             return Lines(*['%s：%s' % (k, '或'.join(cls.FX_REVERSE[k])) for k in cls.FX_REVERSE])
 
-        if not args:
-            return cls.need_help()
-
-        currency = args[0].upper()
-        if currency not in cls.FX:
-            raise BOCError.CURRENCY
-
         if pd.has(cls.PSmsStop):
             if data.status == cls.START:
                 data.status = cls.STOP
                 storage.update(data)
                 raise BOCError.STOP
             raise BOCError.NOT_START
+
+        if not args:
+            return cls.need_help()
+
+        currency = args[0].upper()
+        if currency not in cls.FX:
+            raise BOCError.CURRENCY
 
         if pd.has(cls.PSms):
             storage.user.require_phone()
