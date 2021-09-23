@@ -101,11 +101,13 @@ class BindPhoneService(Service):
         elif pd.has(cls.PCaptcha):
             if not data.attempt:
                 raise BindPhoneMessage.CAPTCHA_RESENT
-            return '123456'
+
             data.attempt -= 1
             storage.update(data)
             if last_time + 5 * 60 < crt_time:
                 raise BindPhoneMessage.TIME_EXPIRED
+
+            return '123456'
 
             captcha = pd.get(cls.PCaptcha)
 
