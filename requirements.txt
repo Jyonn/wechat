@@ -1,6 +1,11 @@
-PyJWT
-wechatpy
-requests
+PyJWT~=1.7.1
+wechatpy~=1.8.13
+requests~=2.22.0
 pycrypto
-django
+django~=3.0.6
 SmartDjango==3.6.8
+
+smartify~=0.0.2
+bocfx~=0.7.8
+beautifulsoup4~=4.8.2
+Scrapy~=2.5.0

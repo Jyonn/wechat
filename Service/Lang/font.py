@@ -1,21 +1,22 @@
-from Base.para import Para
+from Base.lines import Lines
 from Base.tools import Tools
-from Service.models import ServiceData, Service
+from Service.models import ServiceData, Service, ParamDict
 
 
 @Service.register
 class FontService(Service):
     name = 'font'
     desc = '英文数字转花体字'
-    long_desc = Para(
+    long_desc = Lines(
         '若句子中存在空格，需加引号',
         '👉font "this is a sentence with space"',
         '👉font TheSentenceWithoutSpace')
 
     @classmethod
-    def run(cls, directory: 'Service', storage: ServiceData, parameters: dict, *args):
+    def run(cls, directory: 'Service', storage: ServiceData, pd: ParamDict, *args):
         if not args:
             return cls.need_help()
+
         resp = Tools.get(Tools.FlowerFont, {"sentence": args[0]})
         messages = []
         if not resp['supported']:

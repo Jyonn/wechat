@@ -104,6 +104,6 @@ class ServiceView(View):
                 service_data_list = ServiceData.objects.filter(service=name)
                 service.async_user_handler(service_data_list)
             if service.async_service_task:
-                service.async_service(ServiceData.get_or_create(service, None))
+                service.async_service(service.get_global_storage())
 
         return '异步任务完成'

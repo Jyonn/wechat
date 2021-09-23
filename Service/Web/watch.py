@@ -8,9 +8,9 @@ from SmartDjango import E
 from smartify import P
 
 from Base.common import md5
-from Base.para import Para
+from Base.lines import Lines
 from Base.phone import Phone
-from Service.models import ServiceData, Parameter, Service
+from Service.models import ServiceData, Parameter, Service, ParamDict
 
 
 @E.register(id_processor=E.idp_cls_prefix())
@@ -36,7 +36,7 @@ def url_validate(url):
 class WatchService(Service):
     name = 'watch'
     desc = '网页变化监控'
-    long_desc = Para(
+    long_desc = Lines(
         '当网页发送变化时，将会发送短信提醒，且任务自动结束',
         '⚠️监控最短时间单位为1分钟',
         '⚠️暂不支持中文域名网址监控',
@@ -60,19 +60,19 @@ class WatchService(Service):
         cls.validate(cls.PName, cls.PCancel, cls.PStatus, cls.PInterval)
 
     @classmethod
-    def run(cls, directory: 'Service', storage: ServiceData, parameters: dict, *args):
+    def run(cls, directory: 'Service', storage: ServiceData, pd: ParamDict, *args):
         storage.user.require_phone()
 
         data = storage.classify()
-        if cls.PCancel.is_set_in(parameters):
+        if pd.has(cls.PCancel):
             data.work = False
             storage.update(data)
             return '任务已取消'
 
-        if cls.PStatus.is_set_in(parameters):
+        if pd.has(cls.PStatus):
             if not data.work:
                 return '暂无监控任务'
-            return Para(
+            return Lines(
                 '正在监控：%s' % data.name,
                 '任务开始时间：%s' % cls.readable_time(data.create_time),
                 '已监控次数：%s' % data.visit_times,
@@ -87,10 +87,9 @@ class WatchService(Service):
 
         key = cls.get_key_of(url)
         name = urlparse(url).netloc
-        if cls.PName.is_set_in(parameters):
-            name = cls.PName.get_in(parameters)
-
-        interval = cls.PInterval.get_in(parameters)
+        if pd.has(cls.PName):
+            name = pd.get(cls.PName)
+        interval = pd.get(cls.PInterval)
 
         crt_time = datetime.datetime.now().timestamp()
         storage.update(dict(

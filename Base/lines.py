@@ -1,4 +1,4 @@
-class Para:
+class Lines:
     def __init__(self, *lines: str):
         self.lines = '\n'.join(lines)
 

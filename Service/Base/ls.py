@@ -1,13 +1,14 @@
 from SmartDjango import E
 from smartify import P
 
-from Base.para import Para
+from Base.common import msg_idp
+from Base.lines import Lines
 from Base.root import ROOT_NAME
-from Service.models import ServiceData, Service, Parameter, ServiceDepot
+from Service.models import ServiceData, Service, Parameter, ServiceDepot, ParamDict
 
 
-@E.register(id_processor=E.idp_cls_prefix())
-class LSError:
+@E.register(id_processor=msg_idp)
+class LSMessage:
     CD_DIR = E("{0}不是工具箱，无法进入")
     NOT_FOUND = E("没有名为{0}的工具箱")
     PARENT = E("没有更大的工具箱啦")
@@ -17,7 +18,7 @@ class LSError:
 class LSService(Service):
     name = 'ls'
     desc = '查看工具箱'
-    long_desc = Para(
+    long_desc = Lines(
         '👉ls lang',
         '👉ls ../web')
 
@@ -31,14 +32,14 @@ class LSService(Service):
         for path in paths:
             if path == '..':
                 if not current.parent:
-                    raise LSError.PARENT
+                    raise LSMessage.PARENT
                 current = current.parent
             elif path != '.' and path != '':
                 current = current.get(path)
                 if not current:
-                    raise LSError.NOT_FOUND(path)
+                    raise LSMessage.NOT_FOUND(path)
                 if not current.as_dir:
-                    raise LSError.CD_DIR(current.name)
+                    raise LSMessage.CD_DIR(current.name)
         return current
 
     @classmethod
@@ -46,11 +47,11 @@ class LSService(Service):
         cls.validate(cls.PLong)
 
     @classmethod
-    def run(cls, directory: Service, storage: ServiceData, parameters: dict, *args):
+    def run(cls, directory: Service, storage: ServiceData, pd: ParamDict, *args):
         paths = args[0] if args else ''
         terminal = cls.find_path(directory, paths)
 
-        long = cls.PLong.is_set_in(parameters)
+        long = cls.PLong.is_set_in(pd)
         messages = ['%s中拥有以下工具：' % terminal.name]
         for child in terminal.get_services():
             name = child.name + ['（工具）', '（工具箱）'][child.as_dir]

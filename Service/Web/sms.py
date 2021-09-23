@@ -7,16 +7,16 @@ from bs4 import BeautifulSoup
 from smartify import P
 
 from Base.common import ADMIN_PHONE
-from Base.para import Para
+from Base.lines import Lines
 from Base.phone import Phone
-from Service.models import Service, Parameter, ServiceData
+from Service.models import Service, Parameter, ServiceData, ParamDict
 
 
 @Service.register
 class SMSService(Service):
     name = 'sms'
     desc = '共享手机短信'
-    long_desc = Para(
+    long_desc = Lines(
         '浏览某些不重要的网站且需要手机号注册时，本工具可以提供共享手机号。',
         '通过sms -g命令获取当前手机号，通过sms -s命令获取接收到的短信（由于手机号共享，收到的短信可能还有其他用户的，您收到的短信也公开），通过sms -r命令获取新手机号'
     )
@@ -41,10 +41,10 @@ class SMSService(Service):
             return ['👉%s' % time, msg, '']
 
     @classmethod
-    def run(cls, directory: 'Service', storage: ServiceData, parameters: dict, *args):
+    def run(cls, directory: 'Service', storage: ServiceData, pd: ParamDict, *args):
         data = storage.classify()
 
-        if cls.PRenew.is_set_in(parameters):
+        if pd.has(cls.PRenew):
             global_storage = cls.get_global_storage()
             global_data = global_storage.classify()
             if not global_data.phones:
@@ -58,10 +58,10 @@ class SMSService(Service):
         if not data.phone:
             return '请使用sms -r命令获取新手机号'
 
-        if cls.PGet.is_set_in(parameters):
+        if pd.has(cls.PGet):
             return data.phone
 
-        if cls.PShow:
+        if pd.has(cls.PShow):
             url = '%s86%s' % (cls.SMS_WEB, data.phone)
             try:
                 with requests.get(url) as r:
@@ -76,7 +76,7 @@ class SMSService(Service):
             lines = []
             [lines.extend(item) for item in items]
 
-            return Para(*lines)
+            return Lines(*lines)
 
         return cls.need_help()
 

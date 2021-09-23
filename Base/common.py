@@ -58,3 +58,11 @@ def md5(b):
     m = hashlib.md5()
     m.update(b)
     return m.hexdigest()
+
+
+def msg_idp(name, cls):
+    cls_name = cls.__name__  # type: str
+    if cls_name.upper().endswith('MESSAGE'):
+        cls_name = cls_name[:-5]
+    cls_name = cls_name.upper()
+    return '-'.join([cls_name, name])

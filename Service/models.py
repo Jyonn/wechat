@@ -4,15 +4,16 @@ from SmartDjango import models
 from SmartDjango.classify import Classify
 from django.db.models import F
 
-
 from typing import List, Union, Dict
 
 from SmartDjango import E
 from smartify import P
 
+from Base.common import msg_idp
 
-@E.register()
-class ServiceError:
+
+@E.register(id_processor=msg_idp)
+class ServiceMessage:
     PARAM_NO_VALUE = E("命令需要{0}参数")
     PARAM_NAME = E("参数命名错误")
     DIR_NOT_CALLABLE = E("目录无法运行")
@@ -20,6 +21,7 @@ class ServiceError:
 
 class Parameter:
     """参数"""
+
     class NotSet:
         pass
 
@@ -39,7 +41,7 @@ class Parameter:
         self.allow_default = allow_default
 
         if not self.short and not self.long:
-            raise ServiceError.PARAM_NAME
+            raise ServiceMessage.PARAM_NAME
 
     def get_from(self, kwargs: dict):
         keys = []
@@ -61,13 +63,24 @@ class Parameter:
                 return '-%s' % self.short
         return '--%s' % self.long
 
-    def is_set_in(self, parameters: dict):
-        if self in parameters:
-            return parameters[self] != self.NotSet
+    def is_set_in(self, pd):
+        if self in pd.p_dict:
+            return pd.p_dict[self] != self.NotSet
         return False
 
-    def get_in(self, parameters: dict):
-        return parameters[self]
+    def get_in(self, pd):
+        return pd.p_dict[self]
+
+
+class ParamDict:
+    def __init__(self, p_dict: dict):
+        self.p_dict = p_dict
+
+    def has(self, key: Parameter):
+        return key.is_set_in(self)
+
+    def get(self, key: Parameter):
+        return key.get_in(self)
 
 
 class ServiceData(models.Model):
@@ -169,16 +182,16 @@ class Service:
         return '\n'.join(messages)
 
     @classmethod
-    def work(cls, directory: 'Service', storage: ServiceData, parameters: dict, *args):
+    def work(cls, directory: 'Service', storage: ServiceData, pd: ParamDict, *args):
         if cls.as_dir:
-            raise ServiceError.DIR_NOT_CALLABLE
+            raise ServiceMessage.DIR_NOT_CALLABLE
 
-        if parameters[cls.PHelper] == Parameter.NotSet:
-            return str(cls.run(directory, storage, parameters, *args))
+        if not pd.has(cls.PHelper):
+            return str(cls.run(directory, storage, pd, *args))
         return cls.helper()
 
     @classmethod
-    def run(cls, directory: 'Service', storage: ServiceData, parameters: dict, *args):
+    def run(cls, directory: 'Service', storage: ServiceData, pd: ParamDict, *args):
         pass
 
     @classmethod
@@ -194,7 +207,7 @@ class Service:
             value = parameter.get_from(kwargs)
             if value == Parameter.NotFound:
                 if parameter.default == Parameter.NotSet and not parameter.allow_default:
-                    raise ServiceError.PARAM_NO_VALUE(str(parameter))
+                    raise ServiceMessage.PARAM_NO_VALUE(str(parameter))
                 else:
                     value = parameter.default
             else:

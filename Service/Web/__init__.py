@@ -1,4 +1,5 @@
-from Service.Web.sms import SMSService
+from Service.Web.boc import BOCService
+# from Service.Web.sms import SMSService
 from Service.Web.watch import WatchService
 from Service.models import Service
 
@@ -13,4 +14,4 @@ class WebService(Service):
 
     @classmethod
     def init(cls):
-        cls.contains(WatchService, SMSService)
+        cls.contains(WatchService, BOCService)

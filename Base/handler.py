@@ -4,12 +4,11 @@ from SmartDjango import E
 
 from Base.parser import Parser
 from Base.root import ROOT_NAME
-from Service.Web import WebService
-from Service.models import ServiceData, ServiceDepot
+from Service.models import ServiceData, ServiceDepot, ParamDict, Service
 from User.models import User
 from Service.Base import BaseService
 from Service.Lang import LanguageService
-from Service.models import Service
+from Service.Web import WebService
 
 
 @E.register(id_processor=E.idp_cls_prefix())
@@ -64,6 +63,7 @@ class MessageHandler:
         args, kwargs = Parser.parse(command)
         kwargs.update(parameters)
         parameters = service.process_parameters(kwargs)
+        parameters = ParamDict(parameters)
         if '--inline' in kwargs:
             user.inside(service.name)
             self.message = '已进入%s命令，退出请输入--quit' % service.name

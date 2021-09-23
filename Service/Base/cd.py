@@ -1,26 +1,27 @@
 from SmartDjango import E
 
-from Base.para import Para
+from Base.common import msg_idp
+from Base.lines import Lines
 from Service.Base.ls import LSService
-from Service.models import ServiceData, Service
+from Service.models import ServiceData, Service, ParamDict
 
 
-@E.register(id_processor=E.idp_cls_prefix())
+@E.register(id_processor=msg_idp)
 class CDError:
-    pass
+    SUCCESS = E("已进入{}工具箱")
 
 
 @Service.register
 class CDService(Service):
     name = 'cd'
     desc = '切换工具箱'
-    long_desc = Para(
+    long_desc = Lines(
         '👉cd lang',
         '👉cd ../web')
 
     @classmethod
-    def run(cls, directory: Service, storage: ServiceData, parameters: dict, *args):
+    def run(cls, directory: Service, storage: ServiceData, pd: ParamDict, *args):
         paths = args[0] if args else ''
         terminal = LSService.find_path(directory, paths)
         storage.update(dict(service=terminal.name))
-        return '已进入%s工具箱' % terminal.name
+        raise CDError.SUCCESS(terminal.name)
