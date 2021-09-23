@@ -19,7 +19,7 @@ class User(models.Model):
 
     inside_service = models.CharField(max_length=10, null=True, default=None)
 
-    phone = models.CharField(max_length=11, null=True, default=None)
+    phone = models.CharField(max_length=20, null=True, default=None)
 
     @classmethod
     def get_or_create(cls, openid):
