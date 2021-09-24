@@ -51,5 +51,5 @@ class Phone:
             user = user.phone
 
         text = cls.templates['announce'].replace(
-            '#name#', '[%s - %s]' % (service.name, service.desc)).replace('#message#', message)
+            '#name#', '%s（%s）' % (service.name, service.desc)).replace('#message#', message)
         cls._send(user, text)
