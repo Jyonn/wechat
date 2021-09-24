@@ -19,12 +19,16 @@ def strip_s(s: str):
     return s.strip()
 
 
-def bocfx(fx=0, sort=0, time=-1):
-    if fx in [None, ""]: fx = 0
-    if sort in [None, ""]: sort = 0
-    if time in [None, ""]: time = -1
-    output = main(fx, sort, time)
+def bocfx(FX=0, sort=0, time=-1):
+    if not FX: FX = 0
+    if not sort: sort = 0
+    if not time: time = -1
+    output = main(FX, sort, time)
     return output
+
+
+def get_value(html, row, index):
+    return strip_s(Selector(text=html).xpath('//tr[%i]/td[%s]/text()' % (row, index)).extract()[0])
 
 
 def page_get(output, sort, FX_or, erectDate, nothing, FX, i, page, end):
@@ -35,18 +39,21 @@ def page_get(output, sort, FX_or, erectDate, nothing, FX, i, page, end):
 
     for row in range(2, end):
         try:
-            SE_B = strip_s(Selector(text=html).xpath('//tr[%i]/td[2]/text()' % (row)).extract()[0])
-            BN_B = strip_s(Selector(text=html).xpath('//tr[%i]/td[3]/text()' % (row)).extract()[0])
-            SE_A = strip_s(Selector(text=html).xpath('//tr[%i]/td[4]/text()' % (row)).extract()[0])
-            BN_A = strip_s(Selector(text=html).xpath('//tr[%i]/td[5]/text()' % (row)).extract()[0])
-            time = strip_s(Selector(text=html).xpath('//tr[%i]/td[7]/text()' % (row)).extract()[0].replace('.', '-'))
-            output.append(eval(sort))
+            results = dict(
+                SE_B=get_value(html, row, 2),
+                BN_B=get_value(html, row, 3),
+                SE_A=get_value(html, row, 4),
+                BN_A=get_value(html, row, 5),
+            )
+            time = get_value(html, row, 7).replace('.', '-')
+            results = (FX_or[i], *[results[s] for s in sort], time)
+            output.append(results)
         except IndexError:
             break
 
 
 def main(FX, sort, time):
-    if FX != 0:
+    if FX:
         FXdict = {'英镑': '英镑', '港币': '港币', '美元': '美元', '瑞士法郎': '瑞士法郎', '德国马克': '德国马克', '法国法郎': '法国法郎', '新加坡元': '新加坡元',
                   '瑞典克朗': '瑞典克朗', '丹麦克朗': '丹麦克朗', '挪威克朗': '挪威克朗', '日元': '日元', '加拿大元': '加拿大元', '澳大利亚元': '澳大利亚元',
                   '欧元': '欧元', '澳门元': '澳门元', '菲律宾比索': '菲律宾比索', '泰国铢': '泰国铢', '新西兰元': '新西兰元', '韩国元': '韩国元', '韩元': '韩国元',
@@ -74,39 +81,26 @@ def main(FX, sort, time):
         FX = ['英镑', '欧元', '美元', '加拿大元', '澳大利亚元']
         FX_or = ['GBP', 'EUR', 'USD', 'CAD', 'AUD']
 
-    if sort != 0:
-        sort = sort.split(',')
-        if 'SE' in sort or 'se' in sort or 'Se' in sort:
-            if 'BID' in sort or 'bid' in sort or 'Bid' in sort:
-                sort = '(FX_or[i],SE_B,time)'
-                output = [(len(FX), 'SE_BID', 'Time')]
-            elif 'ASK' in sort or 'ask' in sort or 'Ask' in sort:
-                sort = '(FX_or[i],SE_A,time)'
-                output = [(len(FX), 'SE_ASK', 'Time')]
-            else:
-                sort = '(FX_or[i],SE_B,SE_A,time)'
-                output = [(len(FX), 'SE_BID', 'SE_ASK', 'Time')]
-        elif 'BN' in sort or 'bn' in sort or 'Bn' in sort:
-            if 'BID' in sort or 'bid' in sort or 'Bid' in sort:
-                sort = '(FX_or[i],BN_B,time)'
-                output = [(len(FX), 'BN_BID', 'Time')]
-            elif 'ASK' in sort or 'ask' in sort or 'Ask' in sort:
-                sort = '(FX_or[i],BN_A,time)'
-                output = [(len(FX), 'BN_ASK', 'Time')]
-            else:
-                sort = '(FX_or[i],BN_B,BN_A,time)'
-                output = [(len(FX), 'BN_BID', 'BN_ASK', 'Time')]
-        elif 'BID' in sort or 'bid' in sort or 'Bid' in sort:
-            sort = '(FX_or[i],SE_B,BN_B,time)'
-            output = [(len(FX), 'SE_BID', 'BN_BID', 'Time')]
-        elif 'ASK' in sort or 'ask' in sort or 'Ask' in sort:
-            sort = '(FX_or[i],SE_A,BN_A,time)'
-            output = [(len(FX), 'SE_ASK', 'BN_ASK', 'Time')]
+    se_or_bn = ['SE', 'BN']
+    ask_or_bid = ['A', 'B']
+    if sort:
+        if ('SE' in sort) ^ ('BN' in sort):
+            se_or_bn = ['SE'] if 'SE' in sort else ['BN']
+        if ('ASK' in sort) ^ ('BID' in sort):
+            ask_or_bid = ['A'] if 'ASK' in sort else ['B']
+
+    sort = []
+    for sob in se_or_bn:
+        for aob in ask_or_bid:
+            sort.append(sob + '_' + aob)
+    output = [len(FX)]
+    for s_ in sort:
+        if '_A' in s_:
+            output.append(s_ + 'SK')
         else:
-            raise ValueError
-    else:
-        sort = '(FX_or[i],SE_B,BN_B,SE_A,BN_A,time)'
-        output = [(len(FX), 'SE_BID', 'BN_BID', 'SE_ASK', 'BN_ASK', 'Time')]
+            output.append(s_ + 'ID')
+    output.append('Time')
+    output = [tuple(output)]
 
     if time != -1:
         if len(str(time)) < 5:
@@ -153,7 +147,6 @@ def main(FX, sort, time):
         ex.shutdown(wait=True)
 
         t = [output[0]]
-        # print(output)
         for i in range(len(FX_or)):
             for f in range(len(output)):
                 if output[f][0] == FX_or[i]:

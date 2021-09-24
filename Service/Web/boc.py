@@ -174,7 +174,9 @@ class BOCService(Service):
         value = float(value[0])
         if not data.value or ((data.value > value) ^ (data.monitor == 'max')):
             data.value = value
-            message = ('中银%s汇率达到历史新' % cls.FX[data.currency]) + ('高低'[data.monitor == 'min']) + '：' + str(value)
+            message = ('中银%s的%s达到历史新' % (
+                cls.FX[data.currency], cls.KEY_TRANS[data.sort.replace(',', '_')])) + \
+                ('高低'[data.monitor == 'min']) + '：' + str(value)
             Phone.announce(storage.user, cls, message)
 
         storage.update(data)
