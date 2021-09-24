@@ -59,6 +59,7 @@ class BOCService(Service):
     FX_REVERSE = dict()
 
     KEY_TRANS = dict(SE_BID='现汇买入价', BN_BID='现钞买入价', SE_ASK='现汇卖出价', BN_ASK='现钞卖出价')
+    M_TRANS = dict(min='低', max='高')
 
     async_user_task = True
 
@@ -174,9 +175,9 @@ class BOCService(Service):
         value = float(value[0])
         if not data.value or ((data.value > value) ^ (data.monitor == 'max')):
             data.value = value
-            message = ('中银%s的%s达到历史新' % (
-                cls.FX[data.currency], cls.KEY_TRANS[data.sort.replace(',', '_')])) + \
-                ('高低'[data.monitor == 'min']) + '：' + str(value)
+            message = str(value) + '！' + \
+                      '中银%s的%s达到历史新' % (cls.FX[data.currency], cls.KEY_TRANS[data.sort.replace(',', '_')]) + \
+                      cls.M_TRANS[data.monitor] + '。'
             Phone.announce(storage.user, cls, message)
 
         storage.update(data)
