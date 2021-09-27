@@ -51,7 +51,7 @@ class SMSService(Service):
             return data.phone
 
         if pd.has(cls.PShow):
-            lines = cls.crawler.get_msg(data)
+            lines = cls.crawler.get_msg(data, service=cls)
             return Lines(*lines)
 
         return cls.need_help()

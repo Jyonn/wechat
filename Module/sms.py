@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 from Base.common import ADMIN_PHONE, msg_idp
 from Base.crypto import Crypto
 from Base.phone import Phone
+from Service.models import Service
 
 
 @E.register(id_processor=msg_idp)
@@ -44,7 +45,7 @@ class FreeSMSCrawler:
         raise NotImplementedError
 
     @classmethod
-    def get_msg(cls, data: Classify):
+    def get_msg(cls, data: Classify, service: Service):
         raise NotImplementedError
 
 
@@ -60,6 +61,8 @@ class FreeReceiveSMS(FreeSMSCrawler):
             msg = Crypto.AES_ECB.decrypt(msg.text, key='vnPrahqvcnLvcYZ5')
         else:
             msg = msg.text
+        msg = BeautifulSoup(msg, 'html.parser').text
+
         if msg:
             return ['👉%s' % time, msg, '']
 
@@ -86,12 +89,15 @@ class FreeReceiveSMS(FreeSMSCrawler):
         return [int(phone) for phone in data.fr_map]
 
     @classmethod
-    def get_msg(cls, data: Classify):
-        data.fr_map = data.fr_map or dict()
+    def get_msg(cls, data: Classify, service: Service):
+        global_data = service.get_global_storage().classify()
+        global_data.fr_map = global_data.fr_map or dict()
+
         phone = str(data.phone)
-        if phone not in data.fr_map:
+
+        if phone not in global_data.fr_map:
             raise SMSMessage.NO_PHONE
-        href = data.fr_map[phone]
+        href = global_data.fr_map[phone]
 
         url = '%s%s' % (cls.BASE_URL, href)
         try:
@@ -136,7 +142,7 @@ class TemporaryPhoneNumber(FreeSMSCrawler):
         return [int(phone) for phone in finder]
 
     @classmethod
-    def get_msg(cls, data: Classify):
+    def get_msg(cls, data: Classify, service: Service):
         url = '%s86%s' % (cls.BASE_URL, data.phone)
         try:
             with requests.get(url) as r:

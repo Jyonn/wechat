@@ -65,7 +65,7 @@ class Crypto:
                 cipher = AES.new(key, AES.MODE_ECB, iv)
                 data = cipher.decrypt(encrypted_data).decode()
                 padding_len = data[len(data) - 1]
-                if not isinstance(padding_len):
+                if not isinstance(padding_len, int):
                     padding_len = ord(padding_len)
                 data = data[:-padding_len]
             except Exception as err:
