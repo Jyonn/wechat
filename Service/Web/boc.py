@@ -164,7 +164,7 @@ class BOCService(Service):
         data.last_visit_time = crt_time
 
         try:
-            value = bocfx(data.fx, data.sort)
+            value = bocfx(data.currency, data.sort)
         except E:
             data.error_times += 1
             if data.error_times == 3:
