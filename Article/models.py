@@ -229,6 +229,7 @@ class Comment(models.Model):
                 user=user,
                 content=content,
                 reply_to=reply_to,
+                selected=False,
             )
         except Exception as err:
             raise ArticleError.CREATE_COMMENT(debug_message=err)
