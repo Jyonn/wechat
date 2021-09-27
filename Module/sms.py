@@ -44,7 +44,7 @@ class FreeSMSCrawler:
         raise NotImplementedError
 
     @classmethod
-    def get_msg(cls, data: Classify, phone):
+    def get_msg(cls, data: Classify):
         raise NotImplementedError
 
 
@@ -86,9 +86,9 @@ class FreeReceiveSMS(FreeSMSCrawler):
         return [int(phone) for phone in data.fr_map]
 
     @classmethod
-    def get_msg(cls, data: Classify, phone):
+    def get_msg(cls, data: Classify):
         data.fr_map = data.fr_map or dict()
-        phone = str(phone)
+        phone = str(data.phone)
         if phone not in data.fr_map:
             raise SMSMessage.NO_PHONE
         href = data.fr_map[phone]
@@ -136,8 +136,8 @@ class TemporaryPhoneNumber(FreeSMSCrawler):
         return [int(phone) for phone in finder]
 
     @classmethod
-    def get_msg(cls, data: Classify, phone):
-        url = '%s86%s' % (cls.BASE_URL, phone)
+    def get_msg(cls, data: Classify):
+        url = '%s86%s' % (cls.BASE_URL, data.phone)
         try:
             with requests.get(url) as r:
                 html = r.content.decode()

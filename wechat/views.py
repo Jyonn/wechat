@@ -100,6 +100,7 @@ class ServiceView(View):
 
         for name in ServiceDepot.services:
             service = ServiceDepot.services[name]
+            # print(name, service.async_service_task, service.async_user_task)
             if service.async_user_task:
                 service_data_list = ServiceData.objects.filter(service=name)
                 service.async_user_handler(service_data_list)
