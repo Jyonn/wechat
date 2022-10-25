@@ -173,7 +173,7 @@ class BOCService(Service):
             return
 
         value = float(value[0])
-        if not data.value or ((data.value > value) ^ (data.monitor == 'max')):
+        if not data.value or (data.value != value and ((data.value > value) ^ (data.monitor == 'max'))):
             data.value = value
             message = str(value) + '！' + \
                       '中银%s的%s达到历史新' % (cls.FX[data.currency], cls.KEY_TRANS[data.sort.replace(',', '_')]) + \
