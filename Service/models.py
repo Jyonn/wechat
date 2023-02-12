@@ -1,12 +1,12 @@
 import json
 
 from SmartDjango import models
-from SmartDjango.classify import Classify
 from django.db.models import F
 
 from typing import List, Union, Dict
 
 from SmartDjango import E
+from oba import Obj
 from smartify import P
 
 from Base.common import msg_idp
@@ -129,11 +129,10 @@ class ServiceData(models.Model):
         return json.loads(data)
 
     def classify(self):
-        return Classify(self.jsonify())
+        return Obj(self.jsonify())
 
     def update(self, data):
-        if isinstance(data, Classify):
-            data = data.dict()
+        data = Obj.raw(data)
         self.data = json.dumps(data, ensure_ascii=False)
         self.save()
 

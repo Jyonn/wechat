@@ -8,6 +8,7 @@ from django.utils.crypto import get_random_string
 @E.register(id_processor=E.idp_cls_prefix())
 class UserError:
     REQUIRE_PHONE = E("该工具需要绑定手机，详见bind命令")
+    REQUIRE_BARK = E("该工具需要绑定Bark，详见bark命令")
 
 
 class User(models.Model):
@@ -20,6 +21,8 @@ class User(models.Model):
     inside_service = models.CharField(max_length=10, null=True, default=None)
 
     phone = models.CharField(max_length=20, null=True, default=None)
+
+    bark = models.CharField(max_length=100, null=True, default=None)
 
     @classmethod
     def get_or_create(cls, openid):
@@ -43,17 +46,29 @@ class User(models.Model):
         self.phone = phone
         self.save()
 
+    def set_bark(self, bark):
+        self.bark = bark
+        self.save()
+
     @property
     def phone_bind(self):
         return self.phone is not None
+
+    @property
+    def bark_bind(self):
+        return self.bark is not None
 
     def require_phone(self):
         if not self.phone:
             raise UserError.REQUIRE_PHONE
 
+    def require_bark(self):
+        if not self.bark:
+            raise UserError.REQUIRE_BARK
+
 
 class UserP:
-    openid, phone = User.P('openid', 'phone')
+    openid, phone, bark = User.P('openid', 'phone', 'bark')
     openid.process(User.get_or_create).rename('openid', yield_name='user')
 
 

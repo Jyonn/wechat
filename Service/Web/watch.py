@@ -7,9 +7,9 @@ import requests
 from SmartDjango import E
 from smartify import P
 
+from Base.bark import Bark
 from Base.common import md5
 from Base.lines import Lines
-from Base.phone import Phone
 from Service.models import ServiceData, Parameter, Service, ParamDict
 
 
@@ -61,7 +61,7 @@ class WatchService(Service):
 
     @classmethod
     def run(cls, directory: 'Service', storage: ServiceData, pd: ParamDict, *args):
-        storage.user.require_phone()
+        storage.user.require_bark()
 
         data = storage.classify()
         if pd.has(cls.PCancel):
@@ -142,12 +142,12 @@ class WatchService(Service):
         except E:
             data.error_times += 1
             if data.error_times == 3:
-                Phone.announce(storage.user, cls, '监控任务%s网页连续三次无法访问，已停止任务' % data.name)
+                Bark.announce(storage.user, cls, '监控任务%s网页连续三次无法访问，已停止任务' % data.name)
                 storage.update(dict(work=False))
             return
 
         if data.key != key:
-            Phone.announce(storage.user, cls, '监控任务%s的网页发生变化' % data.name)
+            Bark.announce(storage.user, cls, '监控任务%s的网页发生变化' % data.name)
             storage.update(dict(work=False))
             return
 

@@ -10,3 +10,4 @@ smartify
 bocfx~=0.7.8
 beautifulsoup4
 Scrapy
+oba
