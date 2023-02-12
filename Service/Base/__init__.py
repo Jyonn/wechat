@@ -15,4 +15,4 @@ class BaseService(Service):
 
     @classmethod
     def init(cls):
-        cls.contains(LSService, CDService, BindPhoneService, BindBarkService)
+        cls.contains(LSService, CDService, BindBarkService, BindPhoneService)

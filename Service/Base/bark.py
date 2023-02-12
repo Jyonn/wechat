@@ -23,7 +23,7 @@ class BindBarkMessage:
     
 @Service.register
 class BindBarkService(Service):
-    name = 'bind'
+    name = 'bark'
     desc = '绑定Bark'
     long_desc = Lines(
         '用于推送其他功能产生的结果',

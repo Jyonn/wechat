@@ -2,8 +2,8 @@ import re
 
 import requests
 from SmartDjango import E
-from SmartDjango.classify import Classify
 from bs4 import BeautifulSoup
+from oba import Obj
 
 from Base.common import ADMIN_PHONE, msg_idp
 from Base.crypto import Crypto
@@ -28,7 +28,7 @@ class FreeSMSCrawler:
     }
 
     @classmethod
-    def get_web_data(cls, url, data: Classify):
+    def get_web_data(cls, url, data: Obj):
         try:
             with requests.get(url, headers=cls.HEADERS) as r:
                 html = r.content.decode()
@@ -41,11 +41,11 @@ class FreeSMSCrawler:
         return html
 
     @classmethod
-    def get_phone_list(cls, data: Classify):
+    def get_phone_list(cls, data: Obj):
         raise NotImplementedError
 
     @classmethod
-    def get_msg(cls, data: Classify, service: Service):
+    def get_msg(cls, data: Obj, service: Service):
         raise NotImplementedError
 
 
@@ -67,7 +67,7 @@ class FreeReceiveSMS(FreeSMSCrawler):
             return ['👉%s' % time, msg, '']
 
     @classmethod
-    def get_phone_list(cls, data: Classify):
+    def get_phone_list(cls, data: Obj):
         html = cls.get_web_data(cls.BASE_URL + '/en/cn/', data)
         if not html:
             return
@@ -89,7 +89,7 @@ class FreeReceiveSMS(FreeSMSCrawler):
         return [int(phone) for phone in data.fr_map]
 
     @classmethod
-    def get_msg(cls, data: Classify, service: Service):
+    def get_msg(cls, data: Obj, service: Service):
         global_data = service.get_global_storage().classify()
         global_data.fr_map = global_data.fr_map or dict()
 
@@ -127,7 +127,7 @@ class TemporaryPhoneNumber(FreeSMSCrawler):
             return ['👉%s' % time, msg, '']
 
     @classmethod
-    def get_phone_list(cls, data: Classify):
+    def get_phone_list(cls, data: Obj):
         html = cls.get_web_data(cls.BASE_URL, data)
         if not html:
             return
@@ -142,7 +142,7 @@ class TemporaryPhoneNumber(FreeSMSCrawler):
         return [int(phone) for phone in finder]
 
     @classmethod
-    def get_msg(cls, data: Classify, service: Service):
+    def get_msg(cls, data: Obj, service: Service):
         url = '%s86%s' % (cls.BASE_URL, data.phone)
         try:
             with requests.get(url) as r:

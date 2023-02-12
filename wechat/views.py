@@ -65,6 +65,12 @@ class TestView(View):
             return e.message
 
 
+class ErrorView(View):
+    @staticmethod
+    def get(_):
+        return E.all()
+
+
 class AccessTokenView(View):
     @staticmethod
     def get(_):

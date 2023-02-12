@@ -133,6 +133,7 @@ class ServiceData(models.Model):
 
     def update(self, data):
         data = Obj.raw(data)
+        print(data)
         self.data = json.dumps(data, ensure_ascii=False)
         self.save()
 

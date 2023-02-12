@@ -72,8 +72,14 @@ class Auth:
     def wechat(func):
         def wrapper(r, *args, **kwargs):
             try:
-                check_signature(token=WX_TOKEN, **r.d.dict('signature', 'timestamp', 'nonce'))
-            except Exception:
+                check_signature(
+                    token=WX_TOKEN,
+                    signature=r.d.signature,
+                    timestamp=r.d.timestamp,
+                    nonce=r.d.nonce,
+                    # **r.d.dict('signature', 'timestamp', 'nonce')
+                )
+            except Exception as e:
                 return 0
             return func(r, *args, **kwargs)
 
