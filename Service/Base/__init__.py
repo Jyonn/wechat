@@ -1,3 +1,4 @@
+from Service.Base.bark import BindBarkService
 from Service.Base.bind import BindPhoneService
 from Service.Base.cd import CDService
 from Service.Base.ls import LSService
@@ -14,4 +15,4 @@ class BaseService(Service):
 
     @classmethod
     def init(cls):
-        cls.contains(LSService, CDService, BindPhoneService)
+        cls.contains(LSService, CDService, BindPhoneService, BindBarkService)
