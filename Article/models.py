@@ -192,9 +192,11 @@ class Comment(models.Model):
         default=None,
     )
 
-    selected = models.NullBooleanField(
+    selected = models.BooleanField(
         verbose_name='精选评论',
         default=None,
+        null=True,
+        blank=True,
     )
 
     @classmethod

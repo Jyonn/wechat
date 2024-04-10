@@ -1,13 +1,10 @@
 PyJWT
 wechatpy
 requests
-pycrypto (3.8-)
-cryptography (3.10)
+pycryptodome
 django
 SmartDjango
 
-smartify
-bocfx~=0.7.8
+bocfx
 beautifulsoup4
 Scrapy
-oba

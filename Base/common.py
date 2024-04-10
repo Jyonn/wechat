@@ -7,13 +7,9 @@ from wechatpy import WeChatClient
 
 from Base.logging import Logging
 from Config.models import Config, CI
-
+from wechat.settings import PROJ_INIT
 
 DEV_MODE = True
-
-
-# def data_packer(resp):
-#     return resp['body'] or ''
 
 
 def body_packer(func):
@@ -48,8 +44,12 @@ YP_KEY = Config.get_value_by_key(CI.YP_KEY)
 SECRET_KEY = Config.get_value_by_key(CI.SECRET_KEY)
 JWT_ENCODE_ALGO = Config.get_value_by_key(CI.JWT_ENCODE_ALGO)
 
-wechat_client = WeChatClient(appid=WX_APP_ID, secret=WX_APP_SECRET)
-qiX_client = WeChatClient(appid=QIX_APP_ID, secret=QIX_APP_SECRET)
+if PROJ_INIT:
+    wechat_client = None
+    qiX_client = None
+else:
+    wechat_client = WeChatClient(appid=WX_APP_ID, secret=WX_APP_SECRET)
+    qiX_client = WeChatClient(appid=QIX_APP_ID, secret=QIX_APP_SECRET)
 
 logging = Logging(datetime.now().strftime('%Y-%m-%d %H%M%S') + '.log')
 
