@@ -93,12 +93,6 @@ class WatchService(Service):
 
         crt_time = datetime.datetime.now().timestamp()
 
-        print('name:', name)
-        print('url:', url)
-        print('key:', key)
-        print('interval:', interval)
-        print('crt_time:', crt_time)
-
         storage.update(dict(
             work=True,
             name=name,
