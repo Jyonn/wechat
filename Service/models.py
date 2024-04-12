@@ -31,19 +31,14 @@ class Parameter:
     def __init__(self,
                  p: Union[P, str, None] = None,
                  long=None,
-                 short=None):
+                 short=None,
+                 default=NotSet,
+                 allow_default=True):
         self.p = P(p) if isinstance(p, str) else p
         self.short = short
         self.long = long
-
-        if self.p.has_default:
-            self.default = self.p.default_value
-            self.allow_default = True
-        else:
-            self.default = self.NotSet
-            self.allow_default = False
-        # self.default = default
-        # self.allow_default = allow_default
+        self.default = default
+        self.allow_default = allow_default
 
         if not self.short and not self.long:
             raise ServiceMessage.PARAM_NAME

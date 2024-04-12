@@ -46,7 +46,7 @@ class WatchService(Service):
 
     async_user_task = True
 
-    PInterval = Parameter(P(read_name='监控时间单位').default(5).process(int), long='interval', short='i')
+    PInterval = Parameter(P(read_name='监控时间单位').process(int), long='interval', short='i', default=5)
     PName = Parameter(P(read_name='监控名').default(), long='name', short='n')
     PCancel = Parameter(P(read_name='取消当前任务').default(), long='cancel')
     PStatus = Parameter(P(read_name='查看当前任务').default(), long='status')
