@@ -133,7 +133,6 @@ class ServiceData(models.Model):
 
     def update(self, data):
         data = Obj.raw(data)
-        print(data)
         self.data = json.dumps(data, ensure_ascii=False)
         self.save()
 
@@ -202,15 +201,22 @@ class Service:
 
     @classmethod
     def process_parameters(cls, kwargs: dict):
+        print('processing')
+        print(kwargs)
+
         parameters = dict()
         for parameter in cls.__parameters:
             value = parameter.get_from(kwargs)
+            print(f'get {parameter} from kwargs: {value}')
             if value == Parameter.NotFound:
+                print(f'{parameter} not found')
                 if parameter.default == Parameter.NotSet and not parameter.allow_default:
                     raise ServiceMessage.PARAM_NO_VALUE(str(parameter))
                 else:
+                    print(f'{parameter} use default value {parameter.default}')
                     value = parameter.default
             else:
+                print(f'{parameter} found in kwargs')
                 _, value = parameter.p.run(value)
             parameters[parameter] = value
         return parameters
