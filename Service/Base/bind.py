@@ -42,6 +42,9 @@ class BindPhoneService(Service):
     name = 'bind'
     desc = '绑定手机号'
     long_desc = Lines(
+        '⚠️短信接收将不再是MasterWhole的推送方式，请及时绑定Bark',
+        '更多信息请输入命令：bark -h',
+        ''
         '用于推送其他功能产生的结果',
         '手机号绑定后允许更改',
         '设置手机号并发送验证码：bind -p13xxxxxxxxx',
