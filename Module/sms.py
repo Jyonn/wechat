@@ -1,4 +1,5 @@
 import re
+from typing import Type
 
 import requests
 from SmartDjango import E
@@ -89,7 +90,7 @@ class FreeReceiveSMS(FreeSMSCrawler):
         return [int(phone) for phone in data.fr_map]
 
     @classmethod
-    def get_msg(cls, data: Obj, service: Service):
+    def get_msg(cls, data: Obj, service: Type[Service]):
         global_data = service.get_global_storage().classify()
         global_data.fr_map = global_data.fr_map or dict()
 
