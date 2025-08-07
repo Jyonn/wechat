@@ -44,10 +44,7 @@ class MailGetService(Service):
                     msg = email.message_from_bytes(response_part[1])
 
                     # Decode the email subject
-                    subject, encoding = decode_header(msg["Subject"])[0]
-                    if isinstance(subject, bytes):
-                        subject = subject.decode(encoding if encoding else "utf-8")
-
+                    subject = decode_header(msg["Subject"])
                     from_ = msg.get("From")
                     sender_name, sender_email = email.utils.parseaddr(from_)
 
@@ -79,6 +76,9 @@ class MailGetService(Service):
             username=mail_data['username'],
             password=mail_data['password'],
         )
+
+        if not emails:
+            return '暂无邮件'
 
         lines = []
         for index, email in enumerate(emails):
