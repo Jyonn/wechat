@@ -1,26 +1,24 @@
 import datetime
 import string
 
-from SmartDjango import E
 from django.utils.crypto import get_random_string
-from smartify import P
+from smartdjango import Error, Validator
 
-from Base.common import msg_idp
 from Base.lines import Lines
 from Base.phone import Phone
 from Service.models import ServiceData, Service, Parameter, ParamDict
 
 
-@E.register(id_processor=msg_idp)
-class BindPhoneMessage:
-    PHONE_FORMAT = E("手机号格式错误")
-    SEND_WAIT = E("请在{}后重试")
-    MODIFY_NOT_ALLOWED = E("手机号已绑定，暂不支持更改")
-    CAPTCHA_SENT = E("验证码已发送，五分钟内有效，请使用bind -c命令验证")
-    CAPTCHA_RESENT = E('请重新发送验证码')
-    TIME_EXPIRED = E('验证码有效期五分钟已超出，请重新发送')
-    CAPTCHA_WRONG = E('验证码错误，您还有{}次重试机会')
-    SUCCESS = E('手机号绑定成功')
+@Error.register
+class BindPhoneMessageErrors:
+    PHONE_FORMAT = Error("手机号格式错误")
+    SEND_WAIT = Error("请在{time}后重试")
+    MODIFY_NOT_ALLOWED = Error("手机号已绑定，暂不支持更改")
+    CAPTCHA_SENT = Error("验证码已发送，五分钟内有效，请使用bind -c命令验证")
+    CAPTCHA_RESENT = Error('请重新发送验证码')
+    TIME_EXPIRED = Error('验证码有效期五分钟已超出，请重新发送')
+    CAPTCHA_WRONG = Error('验证码错误，您还有{time}次重试机会')
+    SUCCESS = Error('手机号绑定成功')
     
     
 def phone_validator(phone):
@@ -28,13 +26,13 @@ def phone_validator(phone):
         digits = phone[1:]
     else:
         if len(phone) != 11:
-            raise BindPhoneMessage.PHONE_FORMAT
+            raise BindPhoneMessageErrors.PHONE_FORMAT
         digits = phone
     for c in digits:
         if c not in string.digits:
-            raise BindPhoneMessage.PHONE_FORMAT
+            raise BindPhoneMessageErrors.PHONE_FORMAT
     if len(digits) < 6:
-        raise BindPhoneMessage.PHONE_FORMAT
+        raise BindPhoneMessageErrors.PHONE_FORMAT
 
 
 @Service.register
@@ -55,11 +53,11 @@ class BindPhoneService(Service):
     WAIT = 0
     DONE = 1
 
-    PPhone = Parameter(P(read_name='手机号')
-                       .process(str)
-                       .validate(phone_validator),
+    PPhone = Parameter(Validator(verbose_name='手机号')
+                       .to(str)
+                       .to(phone_validator),
                        long='phone', short='p')
-    PCaptcha = Parameter(P(read_name='验证码').default(), long='captcha', short='c')
+    PCaptcha = Parameter(Validator(verbose_name='验证码').default(None).null(), long='captcha', short='c')
 
     @classmethod
     def init(cls):
@@ -91,7 +89,7 @@ class BindPhoneService(Service):
 
             send_wait = last_time + 60 - crt_time
             if send_wait > 0:
-                raise BindPhoneMessage.SEND_WAIT(send_wait)
+                raise BindPhoneMessageErrors.SEND_WAIT(time=send_wait)
 
             Phone.validate(phone, captcha)
             storage.update(dict(
@@ -100,22 +98,22 @@ class BindPhoneService(Service):
                 last_time=crt_time,
                 attempt=3,
             ))
-            raise BindPhoneMessage.CAPTCHA_SENT
+            raise BindPhoneMessageErrors.CAPTCHA_SENT
         elif pd.has(cls.PCaptcha):
             if not data.attempt:
-                raise BindPhoneMessage.CAPTCHA_RESENT
+                raise BindPhoneMessageErrors.CAPTCHA_RESENT
 
             data.attempt -= 1
             storage.update(data)
             if last_time + 5 * 60 < crt_time:
-                raise BindPhoneMessage.TIME_EXPIRED
+                raise BindPhoneMessageErrors.TIME_EXPIRED
 
             captcha = pd.get(cls.PCaptcha)
             if captcha != data.captcha:
-                raise BindPhoneMessage.CAPTCHA_WRONG(data.attempt)
+                raise BindPhoneMessageErrors.CAPTCHA_WRONG(time=data.attempt)
 
             storage.user.set_phone(data.phone)
             storage.update(dict(status=cls.DONE))
-            raise BindPhoneMessage.SUCCESS
+            raise BindPhoneMessageErrors.SUCCESS
         else:
             return cls.need_help()

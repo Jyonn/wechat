@@ -1,16 +1,16 @@
 from urllib.parse import urlencode
 
 import requests
-from SmartDjango import E
+from smartdjango import Error, Code
 
 from Base.common import YP_KEY
 from Service.models import ServiceData
 from User.models import User
 
 
-@E.register(id_processor=E.idp_cls_prefix())
-class PhoneError:
-    SEND = E("短信发送失败")
+@Error.register
+class PhoneErrors:
+    SEND = Error("短信发送失败", code=Code.InternalServerError)
 
 
 class Phone:
@@ -35,8 +35,8 @@ class Phone:
             }
 
             requests.post(cls.send_api, params, headers=headers).close()
-        except Exception:
-            raise PhoneError.SEND
+        except Exception as e:
+            raise PhoneErrors.SEND(details=e)
 
     @classmethod
     def validate(cls, phone, code):

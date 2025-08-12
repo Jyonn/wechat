@@ -1,5 +1,5 @@
 import requests
-from SmartDjango import E
+from smartdjango import Error, Code
 
 from Base.common import QIX_APP_ID, QIX_APP_SECRET
 
@@ -10,13 +10,13 @@ from Crypto.Cipher import AES
 from Config.models import CI, Config
 
 
-@E.register(id_processor=E.idp_cls_prefix())
+@Error.register
 class WeixinError:
-    JS_CODE = E("需要鉴权代码")
-    APP_ID = E("错误的小程序ID")
-    DECRYPT = E("用户信息提取失败")
-    SAFE_CHECK_FAIL = E("敏感检测失败", hc=500)
-    CONTENT_UNSAFE = E("存在敏感内容", hc=403)
+    JS_CODE = Error("需要鉴权代码", code=Code.BadRequest)
+    APP_ID = Error("错误的小程序ID", code=Code.BadRequest)
+    DECRYPT = Error("用户信息提取失败", code=Code.InternalServerError)
+    SAFE_CHECK_FAIL = Error("敏感检测失败", code=Code.InternalServerError)
+    CONTENT_UNSAFE = Error("存在敏感内容", code=Code.Forbidden)
 
 
 class Weixin:
@@ -52,7 +52,7 @@ class Weixin:
             if decrypted['watermark']['appid'] != QIX_APP_ID:
                 raise WeixinError.APP_ID
         except Exception as err:
-            raise WeixinError.DECRYPT(debug_message=err)
+            raise WeixinError.DECRYPT(details=err)
 
         return decrypted
 
@@ -72,7 +72,7 @@ class Weixin:
                 raise WeixinError.CONTENT_UNSAFE
             if data['errcode'] != 0:
                 raise WeixinError.SAFE_CHECK_FAIL
-        except E as e:
+        except Error as e:
             raise e
-        except Exception:
-            raise WeixinError.SAFE_CHECK_FAIL
+        except Exception as e:
+            raise WeixinError.SAFE_CHECK_FAIL(details=e)

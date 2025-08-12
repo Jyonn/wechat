@@ -1,12 +1,12 @@
-from smartify import E
+from smartdjango import Error, Code
 
 
-@E.register(id_processor=E.idp_cls_prefix())
+@Error.register
 class ParserError:
-    TRANSFER = E("以转义字符结尾")
-    EMPTY = E("空的参数名")
-    QUOTE = E("引号不匹配")
-    QUOTE_AROUND = E("引号不在子串两端")
+    TRANSFER = Error("以转义字符结尾", code=Code.BadRequest)
+    EMPTY = Error("空的参数名", code=Code.BadRequest)
+    QUOTE = Error("引号不匹配", code=Code.BadRequest)
+    QUOTE_AROUND = Error("引号不在子串两端", code=Code.BadRequest)
 
 
 class Parser:

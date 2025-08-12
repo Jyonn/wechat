@@ -4,8 +4,7 @@ from typing import List
 from urllib.parse import urlparse
 
 import requests
-from SmartDjango import E
-from smartify import P
+from smartdjango import Error, Code, Validator
 
 from Base.bark import Bark
 from Base.common import md5
@@ -13,10 +12,10 @@ from Base.lines import Lines
 from Service.models import ServiceData, Parameter, Service, ParamDict
 
 
-@E.register(id_processor=E.idp_cls_prefix())
-class WatchError:
-    URL = E("url不规范")
-    GET_URL = E("获取网页失败，请重试")
+@Error.register
+class WatchErrors:
+    URL = Error("URL不规范", code=Code.BadRequest)
+    GET_URL = Error("获取网页失败，请重试", code=Code.BadRequest)
 
 
 regex = re.compile(
@@ -46,10 +45,10 @@ class WatchService(Service):
 
     async_user_task = True
 
-    PInterval = Parameter(P(read_name='监控时间单位').process(int), long='interval', short='i', default=5)
-    PName = Parameter(P(read_name='监控名').default(), long='name', short='n')
-    PCancel = Parameter(P(read_name='取消当前任务').default(), long='cancel')
-    PStatus = Parameter(P(read_name='查看当前任务').default(), long='status')
+    PInterval = Parameter(Validator(verbose_name='监控时间单位').to(int), long='interval', short='i', default=5)
+    PName = Parameter(Validator(verbose_name='监控名').default(None).null(), long='name', short='n')
+    PCancel = Parameter(Validator(verbose_name='取消当前任务').default(None).null(), long='cancel')
+    PStatus = Parameter(Validator(verbose_name='查看当前任务').default(None).null(), long='status')
 
     @staticmethod
     def readable_time(create_time):
@@ -83,7 +82,7 @@ class WatchService(Service):
             return cls.need_help()
         url = args[0]
         if not url_validate(url):
-            raise WatchError.URL
+            raise WatchErrors.URL
 
         key = cls.get_key_of(url)
         name = urlparse(url).netloc
@@ -118,7 +117,7 @@ class WatchService(Service):
             with requests.get(url, timeout=3) as r:
                 content = r.content  # type: bytes
         except Exception:
-            raise WatchError.GET_URL
+            raise WatchErrors.GET_URL
 
         return md5(content)
 
@@ -140,7 +139,7 @@ class WatchService(Service):
         try:
             key = cls.get_key_of(data.url)
             data.error_times = 0
-        except E:
+        except Error:
             data.error_times += 1
             if data.error_times == 3:
                 Bark.announce(storage.user, cls, '监控任务%s网页连续三次无法访问，已停止任务' % data.name)

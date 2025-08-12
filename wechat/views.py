@@ -1,8 +1,8 @@
 import datetime
 from typing import Union
 
-from SmartDjango import Analyse, E
 from django.views import View
+from smartdjango import analyse, Error
 from wechatpy import parse_message
 from wechatpy.events import BaseEvent
 from wechatpy.messages import TextMessage
@@ -14,24 +14,23 @@ from Base.handler import MessageHandler
 from Base.idx import tidx
 from Config.models import Config, CI
 from Service.models import ServiceDepot, ServiceData
-from User.models import UserP, User
+from User.models import User
+from User.params import UserParams
 
 
 class MessageView(View):
-    @staticmethod
     @body_packer
-    @Analyse.r(q=['signature', 'timestamp', 'nonce', 'echostr'])
+    @analyse.query('signature', 'timestamp', 'nonce', 'echostr')
     @Auth.wechat
-    def get(r):
-        return r.d.echostr
+    def get(self, request):
+        return request.query.echostr
 
-    @staticmethod
     @body_packer
-    @Analyse.r(q=['signature', 'timestamp', 'nonce', UserP.openid])
+    @analyse.query('signature', 'timestamp', 'nonce', UserParams.user_getter)
     @Auth.wechat
-    def post(r):
-        user = r.d.user
-        message = parse_message(r.body)  # type: Union[TextMessage, BaseEvent]
+    def post(self, request):
+        user = request.d.user
+        message = parse_message(request.body)  # type: Union[TextMessage, BaseEvent]
 
         if message.type == 'event':
             if message.event.startswith('subscribe'):
@@ -42,8 +41,8 @@ class MessageView(View):
         elif message.type == 'text':
             try:
                 content = MessageHandler(user, message.content).message
-            except E as e:
-                content = e.message
+            except Error as e:
+                content = e.user_message
         else:
             content = '暂不支持回复非文字消息'
 
@@ -53,27 +52,24 @@ class MessageView(View):
 
 
 class TestView(View):
-    @staticmethod
     @body_packer
     @Auth.only_localhost
-    @Analyse.r(b=['command'])
-    def post(r):
+    @analyse.json('command')
+    def post(self, request):
         user = User.objects.get(pk=1)
         try:
-            return MessageHandler(user, r.d.command).message
-        except E as e:
-            return e.message
+            return MessageHandler(user, request.d.command).message
+        except Error as e:
+            return e.user_message
 
 
 class ErrorView(View):
-    @staticmethod
-    def get(_):
-        return E.all()
+    def get(self, request):
+        return Error.all()
 
 
 class AccessTokenView(View):
-    @staticmethod
-    def get(_):
+    def get(self, request):
         crt_time = datetime.datetime.now().timestamp()
 
         if tidx.allow_key_maps_constructor():
@@ -98,10 +94,9 @@ class AccessTokenView(View):
 
 
 class ServiceView(View):
-    @staticmethod
-    @Analyse.r(q=['secret_key'])
-    def get(r):
-        if SECRET_KEY != r.d.secret_key:
+    @analyse.query('secret_key')
+    def get(self, request):
+        if SECRET_KEY != request.query.secret_key:
             return 0
 
         for name in ServiceDepot.services:

@@ -1,17 +1,15 @@
-from SmartDjango import E
-from smartify import P
+from smartdjango import Error, Validator
 
-from Base.common import msg_idp
 from Base.lines import Lines
 from Base.root import ROOT_NAME
 from Service.models import ServiceData, Service, Parameter, ServiceDepot, ParamDict
 
 
-@E.register(id_processor=msg_idp)
-class LSMessage:
-    CD_DIR = E("{0}不是工具箱，无法进入")
-    NOT_FOUND = E("没有名为{0}的工具箱")
-    PARENT = E("没有更大的工具箱啦")
+@Error.register
+class LSMessageErrors:
+    CD_DIR = Error("{0}不是工具箱，无法进入")
+    NOT_FOUND = Error("没有名为{0}的工具箱")
+    PARENT = Error("没有更大的工具箱啦")
 
 
 @Service.register
@@ -22,7 +20,7 @@ class LSService(Service):
         '👉ls lang',
         '👉ls ../web')
 
-    PLong = Parameter(P(read_name='是否显示完整信息').default(), short='l')
+    PLong = Parameter(Validator(verbose_name='是否显示完整信息').default(None).null(), short='l')
 
     @staticmethod
     def find_path(current: Service, paths: str):
@@ -32,14 +30,14 @@ class LSService(Service):
         for path in paths:
             if path == '..':
                 if not current.parent:
-                    raise LSMessage.PARENT
+                    raise LSMessageErrors.PARENT
                 current = current.parent
             elif path != '.' and path != '':
                 current = current.get(path)
                 if not current:
-                    raise LSMessage.NOT_FOUND(path)
+                    raise LSMessageErrors.NOT_FOUND(path)
                 if not current.as_dir:
-                    raise LSMessage.CD_DIR(current.name)
+                    raise LSMessageErrors.CD_DIR(current.name)
         return current
 
     @classmethod
