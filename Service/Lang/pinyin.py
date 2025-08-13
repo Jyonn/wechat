@@ -1,4 +1,4 @@
-from smartify import P
+from smartdjango import Validator
 
 from Base.lines import Lines
 from Base.tools import Tools
@@ -19,7 +19,7 @@ class PinyinService(Service):
         "👉pinyin -s 给",
         "✅gěi")
 
-    PSingle = Parameter(P(read_name='多音字返回一个拼音').default(), long='single', short='s')
+    PSingle = Parameter(Validator(verbose_name='多音字返回一个拼音').default(None).null(), long='single', short='s')
 
     @classmethod
     def run(cls, directory: 'Service', storage: ServiceData, pd: ParamDict, *args):

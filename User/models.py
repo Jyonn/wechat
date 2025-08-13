@@ -1,28 +1,28 @@
 from datetime import datetime
 
-from SmartDjango import models, E
+from diq import Dictify
+from django.db import models
 from django.db.models import F
 from django.utils.crypto import get_random_string
+from smartdjango import Error
+
+from User.validators import UserErrors, MiniUserErrors, MiniUserValidator, UserValidator
 
 
-@E.register(id_processor=E.idp_cls_prefix())
-class UserError:
-    REQUIRE_PHONE = E("该工具需要绑定手机，详见bind命令")
-    REQUIRE_BARK = E("该工具需要绑定Bark，详见bark命令")
+class User(models.Model, Dictify):
+    vldt = UserValidator
 
-
-class User(models.Model):
-    openid = models.CharField(max_length=64, unique=True)
+    openid = models.CharField(max_length=vldt.MAX_PHONE_LENGTH, unique=True)
 
     create_time = models.DateTimeField()
 
     interaction_times = models.IntegerField(default=1)
 
-    inside_service = models.CharField(max_length=10, null=True, default=None)
+    inside_service = models.CharField(max_length=vldt.MAX_INSIDE_SERVICE_LENGTH, null=True, default=None)
 
-    phone = models.CharField(max_length=20, null=True, default=None)
+    phone = models.CharField(max_length=vldt.MAX_PHONE_LENGTH, null=True, default=None)
 
-    bark = models.CharField(max_length=100, null=True, default=None)
+    bark = models.CharField(max_length=vldt.MAX_BARK_LENGTH, null=True, default=None)
 
     @classmethod
     def get_or_create(cls, openid):
@@ -60,47 +60,38 @@ class User(models.Model):
 
     def require_phone(self):
         if not self.phone:
-            raise UserError.REQUIRE_PHONE
+            raise UserErrors.REQUIRE_PHONE
 
     def require_bark(self):
         if not self.bark:
-            raise UserError.REQUIRE_BARK
+            raise UserErrors.REQUIRE_BARK
 
 
-class UserP:
-    openid, phone, bark = User.P('openid', 'phone', 'bark')
-    openid.process(User.get_or_create).rename('openid', yield_name='user')
+class MiniUser(models.Model, Dictify):
+    vldt = MiniUserValidator
 
-
-@E.register(id_processor=E.idp_cls_prefix())
-class MiniUserError:
-    NOT_FOUND = E("找不到小程序用户")
-    CREATE = E("创建小程序用户失败")
-
-
-class MiniUser(models.Model):
     """小程序用户"""
 
     user_id = models.CharField(
-        max_length=6,
-        min_length=6,
+        max_length=vldt.MAX_USER_ID_LENGTH,
         unique=True,
+        validators=[vldt.user_id]
     )
 
     openid = models.CharField(
-        max_length=64,
+        max_length=vldt.MAX_OPENID_LENGTH,
         unique=True,
     )
 
     avatar = models.CharField(
-        max_length=512,
+        max_length=vldt.MAX_AVATAR_LENGTH,
         default=None,
         null=True,
         blank=True,
     )
 
     nickname = models.CharField(
-        max_length=64,
+        max_length=vldt.MAX_NICKNAME_LENGTH,
         default=None,
         null=True,
         blank=True,
@@ -112,7 +103,7 @@ class MiniUser(models.Model):
             user_id = get_random_string(length=6)
             try:
                 cls.get(user_id)
-            except E:
+            except Error:
                 return user_id
 
     @classmethod
@@ -120,7 +111,7 @@ class MiniUser(models.Model):
         try:
             return cls.objects.get(user_id=user_id)
         except cls.DoesNotExist:
-            raise MiniUserError.NOT_FOUND
+            raise MiniUserErrors.NOT_FOUND
 
     @classmethod
     def get_or_create(cls, openid):
@@ -135,7 +126,7 @@ class MiniUser(models.Model):
                 user_id=cls.get_unique_id(),
             )
         except Exception as err:
-            raise MiniUserError.CREATE(debug_message=err)
+            raise MiniUserErrors.CREATE(details=err)
 
     def get_commented_articles(self):
         comments = self.comment_set.values('article__aid').order_by('article__aid').distinct()
@@ -143,7 +134,6 @@ class MiniUser(models.Model):
         return articles
 
     def update(self, avatar, nickname):
-        self.validator(locals())
         self.avatar = avatar
         self.nickname = nickname
         self.save()

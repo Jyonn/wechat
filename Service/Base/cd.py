@@ -1,14 +1,13 @@
-from SmartDjango import E
+from smartdjango import Error, Code
 
-from Base.common import msg_idp
 from Base.lines import Lines
 from Service.Base.ls import LSService
 from Service.models import ServiceData, Service, ParamDict
 
 
-@E.register(id_processor=msg_idp)
+@Error.register
 class CDError:
-    SUCCESS = E("已进入{}工具箱")
+    SUCCESS = Error("已进入{name}工具箱", code=Code.OK)
 
 
 @Service.register
@@ -24,4 +23,4 @@ class CDService(Service):
         paths = args[0] if args else ''
         terminal = LSService.find_path(directory, paths)
         storage.update(dict(service=terminal.name))
-        raise CDError.SUCCESS(terminal.name)
+        raise CDError.SUCCESS(name=terminal.name)

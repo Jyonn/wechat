@@ -1,95 +1,97 @@
-from SmartDjango import Analyse
 from django.views import View
-from smartify import P
+from smartdjango import Validator, analyse, OK
 
-from Article.models import ArticleP, Article, CommentP, Comment
+from Article.models import Article, Comment
+from Article.params import ArticleParams, CommentParams
 from Base.auth import Auth
 from Base.weixin import Weixin
 from User.models import MiniUser
 
 
 class ArticleView(View):
-    @staticmethod
-    @Analyse.r(q=[P('role', '角色').default('owner')])
+    @analyse.query(Validator('role', '角色').default('owner').null())
     @Auth.require_login
-    def get(r):
-        user = r.user  # type: MiniUser
-        if r.d.role == 'owner':
-            return user.article_set.order_by('-pk').all().dict(Article.d_base)
-        else:
-            return list(map(lambda aid: Article.get(aid).d_base(), user.get_commented_articles()))
+    def get(self, request):
+        user = request.user  # type: MiniUser
+        if request.query.role == 'owner':
+            articles = user.article_set.order_by('-pk').all()
+            return [article.d_base() for article in articles]
 
-    @staticmethod
-    @Analyse.r([
-        ArticleP.title,
-        ArticleP.origin,
-        ArticleP.author,
-        ArticleP.self_product,
-        ArticleP.require_review,
-        ArticleP.allow_open_reply,
-    ])
+        return list(map(lambda aid: Article.get(aid).d_base(), user.get_commented_articles()))
+
+    @analyse.json(
+        ArticleParams.title,
+        ArticleParams.origin,
+        ArticleParams.author,
+        ArticleParams.self_product,
+        ArticleParams.require_review,
+        ArticleParams.allow_open_reply,
+    )
     @Auth.require_login
-    def post(r):
-        Weixin.msg_sec_check(r.d.title)
-        Weixin.msg_sec_check(r.d.origin)
-        Weixin.msg_sec_check(r.d.author)
-        return Article.create(r.user, **r.d.dict()).d_create()
+    def post(self, request):
+        Weixin.msg_sec_check(request.json.title)
+        Weixin.msg_sec_check(request.json.origin)
+        Weixin.msg_sec_check(request.json.author)
+        return Article.create(request.user, **request.d.dict()).d_create()
 
 
 class ArticleIDView(View):
-    @staticmethod
-    @Analyse.r(a=[ArticleP.aid_getter])
+    @analyse.argument(ArticleParams.aid_getter)
     @Auth.require_login
-    def get(r):
-        article = r.d.article
-        d = article.d(r.user)
-        return d
+    def get(self, request, **kwargs):
+        article = request.d.article
+        return article.d(request.user)
 
-    @staticmethod
-    @Analyse.r(a=[ArticleP.aid_getter], b=[ArticleP.title, ArticleP.origin, ArticleP.author])
+    @analyse.argument(ArticleParams.aid_getter)
+    @analyse.json(ArticleParams.title, ArticleParams.origin, ArticleParams.author)
     @Auth.require_login
-    def put(r):
-        Weixin.msg_sec_check(r.d.title)
-        Weixin.msg_sec_check(r.d.origin)
-        Weixin.msg_sec_check(r.d.author)
-        article = r.d.article
-        article.update(**r.d.dict('title', 'origin', 'author'))
+    def put(self, request, **kwargs):
+        Weixin.msg_sec_check(request.jsopn.title)
+        Weixin.msg_sec_check(request.json.origin)
+        Weixin.msg_sec_check(request.json.author)
+        article = request.argument.article
+        article.update(
+            title=request.json.title,
+            origin=request.json.origin,
+            author=request.json.author,
+        )
+        return OK
 
-    @staticmethod
-    @Analyse.r(a=[ArticleP.aid_getter])
+    @analyse.argument(ArticleParams.aid_getter)
     @Auth.require_login
-    def delete(r):
-        article = r.d.article
-        article.assert_belongs_to(r.user)
+    def delete(self, request, **kwargs):
+        article = request.argument.article
+        article.assert_belongs_to(request.user)
         article.remove()
+        return OK
 
 
 class CommentView(View):
-    @staticmethod
-    @Analyse.r(b=[CommentP.content, CommentP.reply_to_getter], a=[ArticleP.aid_getter])
+    @analyse.json(CommentParams.content, CommentParams.reply_to_getter)
+    @analyse.argument(ArticleParams.aid_getter)
     @Auth.require_login
-    def post(r):
-        article = r.d.article  # type: Article
-        content = r.d.content
-        reply_to = r.d.reply_to  # type: Comment
+    def post(self, request, **kwargs):
+        article = request.argument.article  # type: Article
+        content = request.json.content
+        reply_to = request.json.reply_to  # type: Comment
 
         Weixin.msg_sec_check(content)
 
         if reply_to:
-            return reply_to.reply(r.user, content).d()
-        return article.comment(r.user, content).d()
+            return reply_to.reply(request.user, content).d()
+        return article.comment(request.user, content).d()
 
 
 class CommentIDView(View):
-    @staticmethod
-    @Analyse.r(a=[ArticleP.aid_getter, CommentP.cid_getter])
+    @analyse.argument(ArticleParams.aid_getter, CommentParams.cid_getter)
     @Auth.require_login
-    def delete(r):
-        article = r.d.article
-        comment = r.d.comment
-        user = r.user
+    def delete(self, request, **kwargs):
+        article = request.argument.article
+        comment = request.argument.comment
+        user = request.user
 
         comment.assert_belongs_to(article)
         comment.assert_belongs_to(user)
 
         comment.remove()
+        return OK

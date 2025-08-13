@@ -2,15 +2,15 @@ import base64
 
 from Crypto import Random
 from Crypto.Cipher import AES
-from SmartDjango import E
+from smartdjango import Error, Code
 
 from Base.common import SECRET_KEY
 
 
-@E.register(id_processor=E.idp_cls_prefix())
-class CryptoError:
-    AES_ENCRYPT = E("AES加密失败")
-    AES_DECRYPT = E("AES解密失败")
+@Error.register
+class CryptoErrors:
+    AES_ENCRYPT = Error("AES加密失败", code=Code.InternalServerError)
+    AES_DECRYPT = Error("AES解密失败", code=Code.InternalServerError)
 
 
 class Crypto:
@@ -24,7 +24,7 @@ class Crypto:
                 encrypted_data = iv + cipher.encrypt(data)
                 encrypted_data = base64.b64encode(encrypted_data).decode()
             except Exception as err:
-                raise CryptoError.AES_ENCRYPT(debug_message=err)
+                raise CryptoErrors.AES_ENCRYPT(debug_message=err)
             return encrypted_data
 
         @staticmethod
@@ -37,7 +37,7 @@ class Crypto:
                 cipher = AES.new(key, AES.MODE_CFB, iv)
                 data = cipher.decrypt(encrypted_data).decode()
             except Exception as err:
-                raise CryptoError.AES_DECRYPT(debug_message=err)
+                raise CryptoErrors.AES_DECRYPT(debug_message=err)
             return data
 
     class AES_ECB:
@@ -53,7 +53,7 @@ class Crypto:
                 encrypted_data = cipher.encrypt(data)
                 encrypted_data = base64.b64encode(encrypted_data).decode()
             except Exception as err:
-                raise CryptoError.AES_ENCRYPT(debug_message=err)
+                raise CryptoErrors.AES_ENCRYPT(debug_message=err)
             return encrypted_data
 
         @classmethod
@@ -69,5 +69,5 @@ class Crypto:
                     padding_len = ord(padding_len)
                 data = data[:-padding_len]
             except Exception as err:
-                raise CryptoError.AES_DECRYPT(debug_message=err)
+                raise CryptoErrors.AES_DECRYPT(debug_message=err)
             return data

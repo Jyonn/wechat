@@ -1,6 +1,6 @@
 from typing import Optional
 
-from SmartDjango import E
+from smartdjango import Error, Code
 
 from Base.parser import Parser
 from Base.root import ROOT_NAME
@@ -11,9 +11,9 @@ from Service.Lang import LanguageService
 from Service.Web import WebService
 
 
-@E.register(id_processor=E.idp_cls_prefix())
-class HandlerError:
-    NOT_FOUND = E("找不到名为{0}的杰作")
+@Error.register
+class HandlerErrors:
+    NOT_FOUND = Error("找不到名为{name}的杰作", code=Code.NotFound)
 
 
 @Service.register
@@ -44,7 +44,7 @@ class MessageHandler:
             service = ServiceDepot.get(service_name)
             if not service:
                 user.inside(None)
-                raise HandlerError.NOT_FOUND(service_name)
+                raise HandlerErrors.NOT_FOUND(name=service_name)
 
         if not service:
             splits = command.split(' ', maxsplit=1)
@@ -56,7 +56,7 @@ class MessageHandler:
 
             service = ServiceDepot.get(service_name)
             if not service:
-                raise HandlerError.NOT_FOUND(service_name)
+                raise HandlerErrors.NOT_FOUND(name=service_name)
 
         storage = ServiceData.get_or_create(service, user)
         parameters = storage.fetch_parameters()
@@ -77,6 +77,3 @@ class MessageHandler:
             self.message = '已退出%s命令' % service.name
         else:
             self.message = service.work(directory, storage, parameters, *args) or ''
-
-        # if not self.is_cmd_hide(user):
-        #     self.message = console_line + self.message

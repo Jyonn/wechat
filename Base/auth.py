@@ -1,7 +1,7 @@
 from functools import wraps
 
-from SmartDjango import E
 from django.http import HttpRequest
+from smartdjango import Error, Code, analyse
 from wechatpy.utils import check_signature
 
 from Base.common import WX_TOKEN, DEV_MODE
@@ -10,20 +10,19 @@ from Base.jtoken import JWT
 from User.models import MiniUser
 
 
-@E.register(id_processor=E.idp_cls_prefix())
-class AuthError:
-    LOCAL = E("只允许本地调试")
-    TOKEN_MISS_PARAM = E("缺少参数{0}")
-    REQUIRE_LOGIN = E("需要登录")
+@Error.register
+class AuthErrors:
+    LOCAL = Error("只允许本地调试", code=Code.Forbidden)
+    TOKEN_MISS_PARAM = Error("缺少参数: {param}", code=Code.BadRequest)
+    REQUIRE_LOGIN = Error("需要登录", code=Code.Unauthorized)
 
 
 class Auth:
     @staticmethod
     def validate_token(request):
         jwt_str = request.META.get('HTTP_TOKEN')
-        # jwt_str = request.COOKIES['token']
         if not jwt_str:
-            raise AuthError.REQUIRE_LOGIN
+            raise AuthErrors.REQUIRE_LOGIN
 
         return JWT.decrypt(jwt_str)
 
@@ -33,65 +32,68 @@ class Auth:
             encrypt_session_key = session_key
         else:
             encrypt_session_key = Crypto.AES.encrypt(session_key)
-        token, _dict = JWT.encrypt(dict(
+        token, dict_ = JWT.encrypt(dict(
             user_id=user.user_id,
             session_key=encrypt_session_key,
         ))
-        _dict['token'] = token
-        _dict['user'] = user.d()
-        return _dict
+        dict_['token'] = token
+        dict_['user'] = user.d()
+        return dict_
 
     @classmethod
-    def _extract_user(cls, r):
-        r.user = None
+    def _extract_user(cls, request):
+        request.user = None
 
-        dict_ = cls.validate_token(r)
+        dict_ = cls.validate_token(request)
         user_id = dict_.get('user_id')
         if not user_id:
-            raise AuthError.TOKEN_MISS_PARAM('user_id')
+            raise AuthErrors.TOKEN_MISS_PARAM(param='user_id')
         session_key = dict_.get("session_key")
         if not session_key:
-            raise AuthError.TOKEN_MISS_PARAM('session_key')
+            raise AuthErrors.TOKEN_MISS_PARAM(param='session_key')
 
         if DEV_MODE:
-            r.session_key = session_key
+            request.session_key = session_key
         else:
-            r.session_key = Crypto.AES.decrypt(session_key)
-        r.user = MiniUser.get(user_id)
+            request.session_key = Crypto.AES.decrypt(session_key)
+        request.user = MiniUser.get(user_id)
 
     @classmethod
     def require_login(cls, func):
         @wraps(func)
-        def wrapper(r, *args, **kwargs):
-            cls._extract_user(r)
-            return func(r, *args, **kwargs)
+        def wrapper(*args, **kwargs):
+            request = analyse.get_request(*args)
+            cls._extract_user(request)
+            return func(*args, **kwargs)
 
         return wrapper
 
     @staticmethod
     def wechat(func):
-        def wrapper(r, *args, **kwargs):
+        def wrapper(*args, **kwargs):
+            request = analyse.get_request(*args)
             try:
                 check_signature(
                     token=WX_TOKEN,
-                    signature=r.d.signature,
-                    timestamp=r.d.timestamp,
-                    nonce=r.d.nonce,
+                    signature=request.data.signature,
+                    timestamp=request.data.timestamp,
+                    nonce=request.data.nonce,
                     # **r.d.dict('signature', 'timestamp', 'nonce')
                 )
-            except Exception as e:
+            except Exception as _:
                 return 0
-            return func(r, *args, **kwargs)
+            return func(*args, **kwargs)
 
         return wrapper
 
     @staticmethod
     def only_localhost(func):
-        def wrapper(r: HttpRequest, *args, **kwargs):
-            host = r.get_host()
+        def wrapper(*args, **kwargs):
+            request = analyse.get_request(*args)
+            host = request.get_host()
             if ':' in host:
                 host = host[:host.index(':')]
             if host == 'localhost':
-                return func(r, *args, **kwargs)
-            raise AuthError.LOCAL
+                return func(*args, **kwargs)
+            raise AuthErrors.LOCAL
         return wrapper

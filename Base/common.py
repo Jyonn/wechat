@@ -1,8 +1,8 @@
 import hashlib
 from datetime import datetime
 
-from SmartDjango import NetPacker, E
 from django.http import HttpResponse
+from smartdjango import Error
 from wechatpy import WeChatClient
 
 from Base.logging import Logging
@@ -16,8 +16,11 @@ def body_packer(func):
     def wrapper(r, *args, **kwargs):
         try:
             data = func(r, *args, **kwargs)
-        except E:
-            data = ''
+        except Error as e:
+            data = e.user_message
+        except Exception as _:
+            data = '服务器错误'
+
         return HttpResponse(
             data,
             status=200,
@@ -26,7 +29,7 @@ def body_packer(func):
     return wrapper
 
 
-NetPacker.set_mode(debug=True)
+# NetPacker.set_mode(debug=True)
 # NetPacker.customize_data_packer(data_packer)
 
 ADMIN_PHONE = Config.get_value_by_key(CI.ADMIN_PHONE)

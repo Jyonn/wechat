@@ -1,24 +1,22 @@
 import datetime
 
-from SmartDjango import E
 from django.utils.crypto import get_random_string
-from smartify import P
+from smartdjango import Error, Code, Validator
 
-from Base.common import msg_idp
 from Base.lines import Lines
 from Base.bark import Bark
 from Service.models import ServiceData, Service, Parameter, ParamDict
 
 
-@E.register(id_processor=msg_idp)
-class BindBarkMessage:
-    SEND_WAIT = E("请在{}后重试")
-    MODIFY_NOT_ALLOWED = E("Bark已绑定，暂不支持更改")
-    CAPTCHA_SENT = E("验证码已发送，五分钟内有效，请使用bark -c命令验证")
-    CAPTCHA_RESENT = E('请重新发送验证码')
-    TIME_EXPIRED = E('验证码有效期五分钟已超出，请重新发送')
-    CAPTCHA_WRONG = E('验证码错误，您还有{}次重试机会')
-    SUCCESS = E('Bark绑定成功')
+@Error.register
+class BindBarkMessageErrors:
+    SEND_WAIT = Error("请在{time}后重试")
+    MODIFY_NOT_ALLOWED = Error("Bark已绑定，暂不支持更改")
+    CAPTCHA_SENT = Error("验证码已发送，五分钟内有效，请使用bark -c命令验证")
+    CAPTCHA_RESENT = Error('请重新发送验证码')
+    TIME_EXPIRED = Error('验证码有效期五分钟已超出，请重新发送')
+    CAPTCHA_WRONG = Error('验证码错误，您还有{time}次重试机会')
+    SUCCESS = Error('Bark绑定成功')
     
     
 @Service.register
@@ -35,8 +33,8 @@ class BindBarkService(Service):
     WAIT = 0
     DONE = 1
 
-    PBark = Parameter(P(read_name='Bark地址').process(str), long='uri', short='u')
-    PCaptcha = Parameter(P(read_name='验证码').default(), long='captcha', short='c')
+    PBark = Parameter(Validator(verbose_name='Bark地址').to(str), long='uri', short='u')
+    PCaptcha = Parameter(Validator(verbose_name='验证码').default(None).null(), long='captcha', short='c')
 
     @classmethod
     def init(cls):
@@ -65,7 +63,7 @@ class BindBarkService(Service):
 
             send_wait = last_time + 60 - crt_time
             if send_wait > 0:
-                raise BindBarkMessage.SEND_WAIT(send_wait)
+                raise BindBarkMessageErrors.SEND_WAIT(time=send_wait)
 
             Bark.validate(bark, captcha)
             storage.update(dict(
@@ -74,22 +72,22 @@ class BindBarkService(Service):
                 last_time=crt_time,
                 attempt=3,
             ))
-            raise BindBarkMessage.CAPTCHA_SENT
+            raise BindBarkMessageErrors.CAPTCHA_SENT
         elif pd.has(cls.PCaptcha):
             if not data.attempt:
-                raise BindBarkMessage.CAPTCHA_RESENT
+                raise BindBarkMessageErrors.CAPTCHA_RESENT
 
             data.attempt -= 1
             storage.update(data)
             if last_time + 5 * 60 < crt_time:
-                raise BindBarkMessage.TIME_EXPIRED
+                raise BindBarkMessageErrors.TIME_EXPIRED
 
             captcha = pd.get(cls.PCaptcha)
             if captcha != data.captcha:
-                raise BindBarkMessage.CAPTCHA_WRONG(data.attempt)
+                raise BindBarkMessageErrors.CAPTCHA_WRONG(time=data.attempt)
 
             storage.user.set_bark(data.bark)
             storage.update(dict(status=cls.DONE))
-            raise BindBarkMessage.SUCCESS
+            raise BindBarkMessageErrors.SUCCESS
         else:
             return cls.need_help()

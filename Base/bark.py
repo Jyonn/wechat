@@ -1,15 +1,15 @@
 from urllib.parse import quote
 
 import requests
-from SmartDjango import E
+from smartdjango import Error, Code
 
 from Service.models import ServiceData
 from User.models import User
 
 
-@E.register(id_processor=E.idp_cls_prefix())
-class BarkError:
-    SEND = E("Bark发送失败")
+@Error.register
+class BarkErrors:
+    SEND = Error("Bark发送失败", code=Code.InternalServerError)
 
 
 class Bark:
@@ -25,8 +25,8 @@ class Bark:
         path = '%s%s/%s' % (bark, quote('MasterWhole', safe=''), quote(text, safe=''))
         try:
             requests.get(path).close()
-        except Exception:
-            raise BarkError.SEND
+        except Exception as e:
+            raise BarkErrors.SEND(details=e)
 
     @classmethod
     def validate(cls, bark, code):

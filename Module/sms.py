@@ -2,21 +2,21 @@ import re
 from typing import Type
 
 import requests
-from SmartDjango import E
 from bs4 import BeautifulSoup
 from oba import Obj
+from smartdjango import Error
 
-from Base.common import ADMIN_PHONE, msg_idp
+from Base.common import ADMIN_PHONE
 from Base.crypto import Crypto
 from Base.phone import Phone
 from Service.models import Service
 
 
-@E.register(id_processor=msg_idp)
-class SMSMessage:
-    NONE = E('暂无可用的共享手机号')
-    NO_PHONE = E('请使用sms -r命令获取新手机号')
-    FAIL_FETCH = E('获取短信失败')
+@Error.register
+class SMSMessageErrors:
+    NONE = Error('暂无可用的共享手机号')
+    NO_PHONE = Error('请使用sms -r命令获取新手机号')
+    FAIL_FETCH = Error('获取短信失败')
 
 
 class FreeSMSCrawler:
@@ -97,7 +97,7 @@ class FreeReceiveSMS(FreeSMSCrawler):
         phone = str(data.phone)
 
         if phone not in global_data.fr_map:
-            raise SMSMessage.NO_PHONE
+            raise SMSMessageErrors.NO_PHONE
         href = global_data.fr_map[phone]
 
         url = '%s%s' % (cls.BASE_URL, href)
@@ -105,7 +105,7 @@ class FreeReceiveSMS(FreeSMSCrawler):
             with requests.get(url, headers=cls.HEADERS) as r:
                 html = r.content.decode()
         except Exception:
-            raise SMSMessage.FAIL_FETCH
+            raise SMSMessageErrors.FAIL_FETCH
 
         soup = BeautifulSoup(html, 'html.parser')
         items = soup.find_all(class_='border-bottom')
@@ -149,7 +149,7 @@ class TemporaryPhoneNumber(FreeSMSCrawler):
             with requests.get(url) as r:
                 html = r.content.decode()
         except Exception:
-            raise SMSMessage.FAIL_FETCH
+            raise SMSMessageErrors.FAIL_FETCH
 
         soup = BeautifulSoup(html, 'html.parser')
         items = soup.find_all(class_='direct-chat-msg')

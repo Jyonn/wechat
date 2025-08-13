@@ -1,11 +1,11 @@
 import requests
-from SmartDjango import E
+from smartdjango import Code, Error
 
 
-@E.register(id_processor=E.idp_cls_prefix())
+@Error.register
 class VoCError:
-    REQUEST = E("该功能暂时无法使用")
-    ERROR = E("内部错误，功能无法使用")
+    REQUEST = Error("该功能暂时无法使用", code=Code.InternalServerError)
+    ERROR = Error("内部错误，功能无法使用", code=Code.InternalServerError)
 
 
 class VoC:

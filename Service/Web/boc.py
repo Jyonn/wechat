@@ -1,8 +1,7 @@
 import datetime
 from typing import List
 
-from SmartDjango import E
-from smartify import P
+from smartdjango import Error, Code, Validator
 
 from Base.boc import bocfx
 from Base.lines import Lines
@@ -10,16 +9,16 @@ from Base.phone import Phone
 from Service.models import Service, Parameter, ServiceData, ParamDict
 
 
-@E.register()
+@Error.register
 class BOCError:
-    SERVICE_INACCESSIBLE = E('服务不可用')
-    CURRENCY = E('货币名称错误，通过-s参数获取所有外币名称')
-    SE_BN = E('短信提醒功能需要指定现汇或现钞（--se/--bn）')
-    BID_ASK = E('短信提醒功能需要指定买入或卖出（--bid/--ask）')
-    SMS = E('短信提醒功能需指定最大值或最小值（max/min）')
-    STOP = E('已关闭短信提醒功能')
-    NOT_START = E('您并没有打开短信提醒功能')
-    START = E('已打开短信提醒功能')
+    SERVICE_INACCESSIBLE = Error('服务不可用', code=Code.InternalServerError)
+    CURRENCY = Error('货币名称错误，通过-s参数获取所有外币名称', code=Code.BadRequest)
+    SE_BN = Error('短信提醒功能需要指定现汇或现钞（--se/--bn）', code=Code.BadRequest)
+    BID_ASK = Error('短信提醒功能需要指定买入或卖出（--bid/--ask）', code=Code.BadRequest)
+    SMS = Error('短信提醒功能需指定最大值或最小值（max/min）', code=Code.BadRequest)
+    STOP = Error('已关闭短信提醒功能', code=Code.OK)
+    NOT_START = Error('您并没有打开短信提醒功能', code=Code.BadRequest)
+    START = Error('已打开短信提醒功能', code=Code.OK)
 
 
 def sms_validator(sms):
@@ -66,13 +65,13 @@ class BOCService(Service):
     START = 1
     STOP = 0
 
-    PSpotEx = Parameter(P(read_name='现汇价').default(), long='se')
-    PBankNo = Parameter(P(read_name='现钞价').default(), long='bn')
-    PBid = Parameter(P(read_name='买入价').default(), long='bid', short='b')
-    PAsk = Parameter(P(read_name='卖出价').default(), long='ask', short='a')
-    PShow = Parameter(P(read_name='显示货币简写列表').default(), long='show', short='s')
-    PSms = Parameter(P(read_name='短信提醒').validate(sms_validator), long='sms')
-    PSmsStop = Parameter(P(read_name='停止短信提醒').default(), long='sms-stop')
+    PSpotEx = Parameter(Validator(read_name='现汇价').default(None).null(), long='se')
+    PBankNo = Parameter(Validator(read_name='现钞价').default(None).null(), long='bn')
+    PBid = Parameter(Validator(read_name='买入价').default(None).null(), long='bid', short='b')
+    PAsk = Parameter(Validator(read_name='卖出价').default(None).null(), long='ask', short='a')
+    PShow = Parameter(Validator(read_name='显示货币简写列表').default(None).null(), long='show', short='s')
+    PSms = Parameter(Validator(read_name='短信提醒').to(sms_validator), long='sms')
+    PSmsStop = Parameter(Validator(read_name='停止短信提醒').default(None).null(), long='sms-stop')
 
     @classmethod
     def init(cls):
@@ -165,7 +164,7 @@ class BOCService(Service):
 
         try:
             value = bocfx(data.currency, data.sort)
-        except E:
+        except Error:
             data.error_times += 1
             if data.error_times == 3:
                 Phone.announce(storage.user, cls, '中银%s汇率连续三次无法访问，已停止任务' % cls.FX[data.currency])

@@ -1,10 +1,10 @@
 import datetime
 import random
 
-from smartify import P
+from smartdjango import Validator
 
 from Base.lines import Lines
-from Module.sms import TemporaryPhoneNumber, SMSMessage, FreeReceiveSMS
+from Module.sms import TemporaryPhoneNumber, SMSMessageErrors, FreeReceiveSMS
 from Service.models import Service, Parameter, ServiceData, ParamDict
 
 
@@ -19,9 +19,9 @@ class SMSService(Service):
 
     async_service_task = True
 
-    PGet = Parameter(P(read_name='获取当前手机号').default(), long='get', short='g')
-    PShow = Parameter(P(read_name='显示短信').default(), long='show', short='s')
-    PRenew = Parameter(P(read_name='获取新手机号').default(), long='renew', short='r')
+    PGet = Parameter(Validator(verbose_name='获取当前手机号').default(None).null(), long='get', short='g')
+    PShow = Parameter(Validator(verbose_name='显示短信').default(None).null(), long='show', short='s')
+    PRenew = Parameter(Validator(verbose_name='获取新手机号').default(None).null(), long='renew', short='r')
 
     crawler = FreeReceiveSMS()
 
@@ -37,7 +37,7 @@ class SMSService(Service):
             global_storage = cls.get_global_storage()
             global_data = global_storage.classify()
             if not global_data.phones:
-                raise SMSMessage.NONE
+                raise SMSMessageErrors.NONE
             phone_num = len(global_data.phones)
             phone_index = random.randint(0, phone_num - 1)
             data.phone = global_data.phones[phone_index]
@@ -45,7 +45,7 @@ class SMSService(Service):
             return data.phone
 
         if not data.phone:
-            raise SMSMessage.NO_PHONE
+            raise SMSMessageErrors.NO_PHONE
 
         if pd.has(cls.PGet):
             return data.phone

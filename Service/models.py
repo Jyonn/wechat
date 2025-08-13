@@ -1,22 +1,19 @@
 import json
 
-from SmartDjango import models
+from django.db import models
 from django.db.models import F
 
 from typing import List, Union, Dict
 
-from SmartDjango import E
 from oba import Obj
-from smartify import P
-
-from Base.common import msg_idp
+from smartdjango import Error, Validator
 
 
-@E.register(id_processor=msg_idp)
-class ServiceMessage:
-    PARAM_NO_VALUE = E("命令需要{0}参数")
-    PARAM_NAME = E("参数命名错误")
-    DIR_NOT_CALLABLE = E("目录无法运行")
+@Error.register
+class ServiceMessageErrors:
+    PARAM_NO_VALUE = Error("命令需要 {param} 参数")
+    PARAM_NAME = Error("参数命名错误")
+    DIR_NOT_CALLABLE = Error("目录无法运行")
 
 
 class Parameter:
@@ -29,19 +26,19 @@ class Parameter:
         pass
 
     def __init__(self,
-                 p: Union[P, str, None] = None,
+                 p: Union[Validator, str, None] = None,
                  long=None,
                  short=None,
                  default=NotSet,
                  allow_default=True):
-        self.p = P(p) if isinstance(p, str) else p
+        self.p = Validator(p) if isinstance(p, str) else p
         self.short = short
         self.long = long
         self.default = default
         self.allow_default = allow_default
 
         if not self.short and not self.long:
-            raise ServiceMessage.PARAM_NAME
+            raise ServiceMessageErrors.PARAM_NAME
 
     def get_from(self, kwargs: dict):
         keys = []
@@ -155,8 +152,8 @@ class Service:
     async_user_task = False
     async_service_task = False
 
-    PHelper = Parameter(P(read_name='获取帮助').default(), long='help', short='h')
-    PInline = Parameter(P(read_name='批处理模式').default(), long='inline')
+    PHelper = Parameter(Validator(verbose_name='获取帮助').default(None).null(), long='help', short='h')
+    PInline = Parameter(Validator(verbose_name='批处理模式').default(None).null(), long='inline')
 
     __parameters = [PHelper, PInline]  # type: List[Parameter]
     __services = []  # type: List['Service']
@@ -177,13 +174,13 @@ class Service:
     def helper(cls):
         messages = ['%s: %s' % (cls.name, cls.desc), str(cls.long_desc), '', '功能参数说明：']
         for parameter in cls.__parameters:
-            messages.append('%s: %s' % (str(parameter), parameter.p.read_name))
+            messages.append('%s: %s' % (str(parameter), parameter.p.key.verbose_name))
         return '\n'.join(messages)
 
     @classmethod
     def work(cls, directory: 'Service', storage: ServiceData, pd: ParamDict, *args):
         if cls.as_dir:
-            raise ServiceMessage.DIR_NOT_CALLABLE
+            raise ServiceMessageErrors.DIR_NOT_CALLABLE
 
         if not pd.has(cls.PHelper):
             return str(cls.run(directory, storage, pd, *args))
@@ -198,6 +195,7 @@ class Service:
         for service in cls.__services:
             if service.name == name:
                 return service
+        return None
 
     @classmethod
     def process_parameters(cls, kwargs: dict):
@@ -206,11 +204,11 @@ class Service:
             value = parameter.get_from(kwargs)
             if value == Parameter.NotFound:
                 if parameter.default == Parameter.NotSet and not parameter.allow_default:
-                    raise ServiceMessage.PARAM_NO_VALUE(str(parameter))
+                    raise ServiceMessageErrors.PARAM_NO_VALUE(param=str(parameter))
                 else:
                     value = parameter.default
             else:
-                _, value = parameter.p.run(value)
+                value = parameter.p.clean(value)
             parameters[parameter] = value
         return parameters
 
