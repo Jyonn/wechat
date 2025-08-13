@@ -3,15 +3,15 @@ import email
 import imaplib
 from nntplib import decode_header
 
-from SmartDjango import E
+from smartdjango import Error, Code
 
 from Base.lines import Lines
 from Service.models import ServiceData, Service, ParamDict
 
 
-@E.register(id_processor=E.idp_cls_prefix())
-class MailGetError:
-    NOT_FOUND = E("找不到邮箱")
+@Error.register
+class MailGetErrors:
+    NOT_FOUND = Error("找不到邮箱", code=Code.NotFound)
 
 
 @Service.register
@@ -67,7 +67,7 @@ class MailGetService(Service):
         global_storage = cls.get_global_storage()
         global_data = global_storage.jsonify()
         if nickname not in global_data:
-            raise MailGetError.NOT_FOUND
+            raise MailGetErrors.NOT_FOUND
 
         mail_data = global_data[nickname]
 
